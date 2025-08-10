@@ -12,14 +12,6 @@ start:
 	jmp 0x7c0:step2 ; set CS
 
 
-; We handle the zeo interrupt here
-handle_zero:
-	mov ah, 0eh
-	mov al, 'A'
-	mov bx, 0x00
-	int 0x10
-	iret
-
 step2:
 	; Set the segments register explicitly as we cannot rely on the BIOS
 	cli ; clear interrupts
@@ -30,20 +22,27 @@ step2:
 	mov ss, ax
 	mov sp, 0x7c00
 	sti ; enable interrupts
+        
+	; The bootloader file is made of two sectors, one contains the code the other
+	; contains the message we want to print. Hence we need to read the message
+	; into memory and print it out.	 osdev.org
+        ; https://www.ctyme.com/intr/rb-0607.htm
 
-	; Set the IVT for interrupt zero OFFSET:SEGMENT
-	mov word [ss:0x00], handle_zero
-	mov word [ss:0x02], 0x7c0
-	
-	; Cause the divide by zero interrupt
-	mov ax, 0x0
-	div ax
-	
-		
-	mov si, message
-	call print
+	; Read from disk, 1 sector
+	mov ah, 2 ; read ..
+	mov al, 1 ; ... one sector ...
+	mov ch, 0x0 ; ... from cylinder zero ..
+	mov cl, 2 ;  ... start from the second sector ...
+	mov bx, buffer ; ... write data into &buffer ...
+	int 0x13 ; start the show
+	jc error ; the BIOS routine sets the CF flag on error
 	jmp $
 
+
+error:
+	mov si, error_message
+	call print
+	jmp $
 
 print:
 	mov bx, 0
@@ -62,7 +61,11 @@ print_char:
 	int 0x10 ; Calling BIOS routine https://www.ctyme.com/rbrown.htm
 	ret
 
+error_message: db 'Something went wrong', 0
 
 message: db 'Hello world!', 0
 times 510- ($ - $$) db 0 ; fill 510 bytes padding with zeros after code
-dw 0xAA55 ; 55AA little indian intel 
+dw 0xAA55 ; 55AA little indian intel
+
+; We use it to point at the end of our bootloader
+buffer: 
