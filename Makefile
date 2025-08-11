@@ -1,5 +1,6 @@
+# Boot with gdb  target remote | qemu-system-x84_64 -hda boot.bin -S -gdb stdio
 boot:
-	nasm -f bin boot.asm -o boot.bin
+	nasm -f bin boot.asm -o boot.bin -g 
 	
 
 

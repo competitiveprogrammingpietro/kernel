@@ -1,6 +1,9 @@
-; Set the start address, ORIGIN. We're in real mode
-ORG 0x0
+; Set the start address, ORIGIN. This bootloader enables the protected mode
+ORG 0x7c00
 BITS 16
+
+CODE_SEG equ gdt_code - gdt_start
+DATA_SEG equ gdt_data - gdt_start
 
 _start:
 	jmp short start
@@ -9,63 +12,80 @@ _start:
 times 33 db 0 ; BIOS parameters block
 
 start:
-	jmp 0x7c0:step2 ; set CS
+	jmp 0:step2 ; set CS. Origin alreay set so CS is set to zero
 
 
 step2:
 	; Set the segments register explicitly as we cannot rely on the BIOS
 	cli ; clear interrupts
-	mov ax, 0x7c0
+	mov ax, 0x0
 	mov ds, ax
 	mov es, ax,
-	mov ax, 0x00
 	mov ss, ax
 	mov sp, 0x7c00
 	sti ; enable interrupts
-        
-	; The bootloader file is made of two sectors, one contains the code the other
-	; contains the message we want to print. Hence we need to read the message
-	; into memory and print it out.	
-        ; https://www.ctyme.com/intr/rb-0607.htm
 
-	; Read from disk, 1 sector
-	mov ah, 2 ; read ..
-	mov al, 1 ; ... one sector ...
-	mov ch, 0x0 ; ... from cylinder zero ..
-	mov cl, 2 ;  ... start from the second sector ...
-	mov bx, buffer ; ... write data into &buffer ...
-	int 0x13 ; start the show
-	jc error ; the BIOS routine sets the CF flag on error
+
+load_protected:
+	cli;
+	lgdt[gdt_descriptor]
+	mov eax, cr0
+	or eax, 0x1
+	mov cr0, eax
+	jmp CODE_SEG:load32 ; This is not entirely clear	
+
+; This is the Global Descriptor Table https://wiki.osdev.org/Global_Descriptor_Table
+; GDT start
+gdt_start:
+gdt_null:
+	
+	;offset 0xb
+	dd 0x0
+	dd 0x0
+
+; Each entry is 8 bytes
+gdt_code: ; CS
+	dw 0xffff 	; Segment limit 2^16
+	dw 0	  	; Base first
+	db 0      	; base second chunk
+	db 0x9a   	; Access byte 1001 1010, by reading the specs:
+			; present, code segment, executable hence code segment, readable
+	db 11001111b 	; Limit half byte hence limit becomes 2^20 
+			; Flags: granularity 4Kb, hence the maximum addressable mem is 4GB
+			;        DB set hence 32 bit protected mode
+	db 0		; base last byte
+
+; offset 0x10
+gdt_data: ; DS, SS, ES, FS, GS
+	dw 0xffff 	; Segment limit 2^16
+	dw 0	  	; Base first
+	db 0      	; base second chunk
+	db 0x92   	; Access byte 1001 0010, by reading the specs:
+			; present, data segment, executable, read/write access
+	db 11001111b 	; Limit half byte hence limit becomes 2^20 
+			; Flags: granularity 4Kb, hence the maximum addressable mem is 4GB
+			;        DB set hence 32 bit protected mode
+	db 0		; base last byte
+
+gdt_end:
+
+gdt_descriptor:
+	dw gdt_end - gdt_start -1
+	dd gdt_start ; ORIGIN set so we're good using the assembler computed offset
+
+
+
+[BITS 32]
+load32:
+	mov ax, DATA_SEG
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+	mov ebp, 0x00200000
+	mov esp, ebp
 	jmp $
 
-
-error:
-	mov si, error_message
-	call print
-	jmp $
-
-print:
-	mov bx, 0
-.loop:
-	lodsb ; DS:SI into AL
-	cmp al, 0 ; NULL string ? 
-	je .done
-	call print_char
-	jmp .loop
-
-.done:
-	ret
-
-print_char:
-	mov ah, 0eh ; BIOS routine number for printing a char on the screen
-	int 0x10 ; Calling BIOS routine https://www.ctyme.com/rbrown.htm
-	ret
-
-error_message: db 'Something went wrong', 0
-
-message: db 'Hello world!', 0
 times 510- ($ - $$) db 0 ; fill 510 bytes padding with zeros after code
 dw 0xAA55 ; 55AA little indian intel
-
-; We use it to point at the end of our bootloader
-buffer: 
