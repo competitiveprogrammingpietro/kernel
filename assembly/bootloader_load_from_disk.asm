@@ -1,3 +1,5 @@
+; This boorloader expects some data to be present in the disk at sector 1, such
+; data is loaded from the disk using the BIOS routines and printed out.
 ; Set the start address, ORIGIN. We're in real mode
 ORG 0x0
 BITS 16
@@ -36,6 +38,8 @@ step2:
 	mov bx, buffer ; ... write data into &buffer ...
 	int 0x13 ; start the show
 	jc error ; the BIOS routine sets the CF flag on error
+	mov si, buffer
+	call print
 	jmp $
 
 
