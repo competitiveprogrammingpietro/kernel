@@ -1,4 +1,7 @@
 ; Set the start address, ORIGIN. This bootloader enables the protected mode
+; db byte
+; dw 2 bytes
+; dd 4 bytes
 ORG 0x7c00
 BITS 16
 
@@ -17,7 +20,9 @@ start:
 
 step2:
 	; Set the segments register explicitly as we cannot rely on the BIOS
-	cli ; clear interrupts
+	cli ; clear interrupts: ignore them for now
+	
+	; all segments to zero
 	mov ax, 0x0
 	mov ds, ax
 	mov es, ax,
@@ -26,20 +31,22 @@ step2:
 	sti ; enable interrupts
 
 
-load_protected:
+.load_protected:
 	cli;
 	lgdt[gdt_descriptor]
-	mov eax, cr0
+	mov eax, cr0 ; the next three lines in fact enable protected mode
 	or eax, 0x1
 	mov cr0, eax
-	jmp CODE_SEG:load32 ; This is not entirely clear	
+	
+	; This tells the CPU to use the index 1 from the GDT, hence the code	
+	jmp CODE_SEG:load32 
 
 ; This is the Global Descriptor Table https://wiki.osdev.org/Global_Descriptor_Table
 ; GDT start
 gdt_start:
 gdt_null:
 	
-	;offset 0xb
+	; first entry the null entry 
 	dd 0x0
 	dd 0x0
 
@@ -70,8 +77,10 @@ gdt_data: ; DS, SS, ES, FS, GS
 gdt_end:
 
 gdt_descriptor:
-	dw gdt_end - gdt_start -1
-	dd gdt_start ; ORIGIN set so we're good using the assembler computed offset
+	dw gdt_end - gdt_start - 1
+	dd gdt_start ; the GDT descriptor offset can be set using this little computatin
+		     ; as the correct ORIGIN is set so we're good 
+		     ; using the assembler computed offset. 
 
 
 
