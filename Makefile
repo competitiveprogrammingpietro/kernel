@@ -1,5 +1,9 @@
 # Boot with gdb  target remote | qemu-system-x84_64 -hda boot.bin -S -gdb stdio
-FILES = ./build/kernel.asm.o
+# The asm kernel file MUST be the first in the list
+FILES = ./build/kernel.asm.o ./build/kernel.o
+INCLUDES = -I./src
+FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-functions -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameters -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
+
 all: ./bin/boot.bin  ./bin./kernel.bin
 	dd if=./bin/boot.bin > ./bin/os.bin
 	dd if=./bin/kernel.bin >> ./bin/os.bin # It might not take a whole sector
@@ -15,8 +19,13 @@ all: ./bin/boot.bin  ./bin./kernel.bin
 ./build/kernel.asm.o: ./src/kernel.asm
 	nasm -f elf -g ./src/kernel.asm -o ./build/kernel.asm.o
 
+./build/kernel.o: ./src/kernel.c
+	i686-elf-gcc $(INCLUDES) $(FLAGS) -c ./src/kernel.c -o ./build/kernel.o -std=gnu99
+
 clean:
-	rm -rf bin/boot/boot.bin ./bin/os.bin
+	rm -rf ./bin/*.bin
+	rm ./build/kernelfull.o $(FILES) 
+
 
 
 # Create a bootable binary hard drive with two sector, the first contains our

@@ -1,5 +1,6 @@
 [BITS 32]
 global _start ; export that to the external world, otherwise it is not visible
+extern kernel_main
 
 CODE_SEG equ 0x8
 DATA_SEG equ 0x10
@@ -17,4 +18,9 @@ _start:
 	in al, 0x92
 	or al, 2
 	out 0x92, al
+	call kernel_main
 	jmp $
+
+
+times 512-($ - $$) db 0 ; fill 512 bytes padding with zeros after code.
+			; this is important to maintain the alignment
