@@ -39,7 +39,7 @@ step2:
 	mov cr0, eax
 	
 	; This tells the CPU to use the index 1 from the GDT, hence the code	
-	jmp CODE_SEG:load32 
+	jmp CODE_SEG:load32
 
 ; This is the Global Descriptor Table https://wiki.osdev.org/Global_Descriptor_Table
 ; GDT start
@@ -82,24 +82,76 @@ gdt_descriptor:
 		     ; as the correct ORIGIN is set so we're good 
 		     ; using the assembler computed offset. 
 
-
-
 [BITS 32]
 load32:
-	mov ax, DATA_SEG
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	mov ebp, 0x00200000
-	mov esp, ebp
-	
-	; Enable A20 line
-	in al, 0x92
-	or al, 2
-	out 0x92, al
-	jmp $
+	; Load kernel into memory
+	mov eax, 1 ; starting sector
+	mov ecx, 100 ; number of sectors to load
+	mov edi, 0x100000 ; where to store it
+	call ata_lba_read
+	jmp CODE_SEG:0x100000
 
-times 510- ($ - $$) db 0 ; fill 510 bytes padding with zeros after code
+
+ata_lba_read:
+	mov ebx, eax ; backup LBA
+	
+	; send higher 8 bits of the LBA to HR controller
+	shr eax, 24
+	or eax, 0xE0 ; Master drive select
+	mov dx, 0x1F6
+	out dx, al
+	; Finished sending the highest 8 bits of the LBA
+	
+	; Send the total sectors to read
+	mov eax, ecx
+	mov dx, 0x1F2
+	out dx, al
+	; Finished sending sectors to read
+
+	; Unclear to me TBH
+	mov eax, ebx
+	mov dx, 0x1F3
+	out dx, al
+	
+	mov dx, 0x1F4
+	mov eax, ebx
+	shr eax, 8
+	out dx, al
+	; end
+
+
+	; Send upper 16 bits
+	mov dx, 0x1F5
+	mov eax, ebx
+	shr eax, 16
+	out dx, al
+	; end
+
+	mov dx, 0x1F7
+	mov al, 0x20
+	out dx, al
+
+	; Read all sectors into memory
+.next_sector:
+	push ecx
+
+; Do we need to read any other data
+.try_again:
+	mov dx, 0x1F7
+	in al, dx
+	test al, 8 
+	jz .try_again
+	
+	; We need to read 256 words at the time
+	mov ecx, 256
+	mov dx, 0x1F0
+	rep insw 
+	pop ecx
+	loop .next_sector
+	ret
+
+
+	
+
+times 510-($ - $$) db 0 ; fill 510 bytes padding with zeros after code
 dw 0xAA55 ; 55AA little indian intel
