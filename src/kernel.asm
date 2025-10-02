@@ -1,5 +1,6 @@
 [BITS 32]
 global _start ; export that to the external world, otherwise it is not visible
+global divide_by_zero_error
 extern kernel_main
 
 CODE_SEG equ 0x8
@@ -21,6 +22,10 @@ _start:
 	call kernel_main
 	jmp $
 
+
+divide_by_zero_error:
+	mov eax, 0
+	div eax
 
 times 512-($ - $$) db 0 ; fill 512 bytes padding with zeros after code.
 			; this is important to maintain the alignment
