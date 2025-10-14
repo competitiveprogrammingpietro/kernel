@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include "idt/idt.h"
+#include "io/io.h"
 #include <stdint.h>
 
 
@@ -52,6 +53,7 @@ void kernel_main() {
   write_string("Hello world\nThis is a BRAND NEW OS!\n");
   idt_init();
   // divide_by_zero_error(); test 
+  outb(0x60, 0xff); // test
 }
 
 
