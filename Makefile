@@ -1,7 +1,8 @@
 # Boot with gdb  target remote | qemu-system-x86_64 -hda boot.bin -S -gdb stdio
 # The asm kernel file MUST be the first in the list
 #FILES = ./build/kernel.asm.o ./build/kernel.o ./build/idt/idt.asm.o ./build/idt/idt.o ./build/memory/memory.o ./build/io/io.asm.o
-FILES = ./build/kernel.asm.o ./build/kernel.o $(shell ls build/*/*.o)
+FILES = ./build/kernel.asm.o ./build/kernel.o $(shell ls build/*/*.o) $(shell ls build/*/*/*.o)
+
 
 FILES_C := $(shell find src -name '*.c')
 FILES_ASM := $(shell find src -name '*.asm' | grep -v 'boot.asm')
