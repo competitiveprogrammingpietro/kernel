@@ -19,6 +19,29 @@ _start:
 	in al, 0x92
 	or al, 2
 	out 0x92, al
+
+	; We need to remap the master PIC to allow for the first 0x20 interrupts number
+	; to be used as exceptions. The x86 addresses for the master PIC are 0x20 for
+	; commands and 0x21 for data.
+	
+	; Initialise command
+	mov al, 00010001b 
+	out 0x20, al
+
+	; That is where IVD starts
+	mov al, 0x20
+
+	; Send data
+	out 0x21, al	   	
+
+	; Additional configuration data
+	mov al, 00000001b 
+	out 0x21, al
+
+
+        ; Enable interrupts
+	sti
+
 	call kernel_main
 	jmp $
 
