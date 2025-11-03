@@ -59,10 +59,15 @@ void kernel_main() {
 
   void * ptr = kmalloc(m1);
   void * ptr1 = kmalloc(m2);
-  if (ptr == 0 || ptr1 == 0)
+  void * ptr2 = kmalloc(m2);
+  kfree(ptr1);
+  ptr1 = kmalloc(m2);
+
+  if (ptr == 0 || ptr1 == 0 || ptr2)
   {
  	write_string("Could not allocate 50 bytes");
   }
+
 }
 
 

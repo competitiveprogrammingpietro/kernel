@@ -80,6 +80,8 @@ void* heap_malloc(struct heap * heap, size_t size)
 		if (i == start_block)
 		{
 			entry = HEAP_BLOCK_TABLE_ENTRY_TAKEN | HEAP_BLOCK_IS_FIRST;
+			if (blocks_number > 1) entry = entry | HEAP_BLOCK_HAS_NEXT;
+
 		}
 		else if (i == start_block + blocks_number - 1) // Last one is not marked with 'HAS_NEXT'
 		{
@@ -96,8 +98,17 @@ void* heap_malloc(struct heap * heap, size_t size)
 	return heap->source_address + (start_block * PEACHOS_HEAP_BLOCK_SIZE);
 }
 
-void heap_free(struct heap * heap, size_t size)
+void heap_free(struct heap * heap, void* addr)
 {
-	
-
+	int block = ((unsigned int) (addr - heap->source_address)) / PEACHOS_HEAP_BLOCK_SIZE;
+	for (int i = block; i < heap->total_blocks; i++)
+	{
+		HEAP_BLOCK_TABLE_ENTRY entry = heap->entries[i];
+		heap->entries[i] = HEAP_BLOCK_TABLE_ENTRY_FREE;
+		
+		if ( !(entry & HEAP_BLOCK_HAS_NEXT) )
+		{
+			break;
+ 		}
+	}
 }
