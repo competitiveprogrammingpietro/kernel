@@ -18,7 +18,7 @@ int heap_create(struct heap* heap,
 	// Compute the size of the heap, in term of number of blocks
 	heap->source_address = ptr;
  	heap->total_blocks = ((size_t) (end - ptr)) / PEACHOS_HEAP_BLOCK_SIZE;
-	memset(heap->entries, HEAP_BLOCK_TABLE_ENTRY_FREE, ((size_t) (end - ptr)));
+	memset(heap->entries, HEAP_BLOCK_TABLE_ENTRY_FREE, heap->total_blocks);
 	return PEACHOS_OK;
 }
 

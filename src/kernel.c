@@ -53,8 +53,12 @@ void kernel_main() {
 
   write_string("Hello world\nThis is a BRAND NEW OS!\n");
   idt_init();
-  void * ptr = kmalloc(50);
-  void * ptr1 = kmalloc(5000);
+  kheap_init();
+  size_t m1 = 50;
+  size_t m2 = 5000;
+
+  void * ptr = kmalloc(m1);
+  void * ptr1 = kmalloc(m2);
   if (ptr == 0 || ptr1 == 0)
   {
  	write_string("Could not allocate 50 bytes");
