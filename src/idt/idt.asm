@@ -3,6 +3,8 @@ section .asm
 global idt_load
 global int21h
 global no_interrupt
+global enable_interrupts
+global disable_interrupts
 
 extern int21_handler
 extern no_interrupt_handler
@@ -16,7 +18,14 @@ idt_load:
 
 	pop ebp
 	ret
-
+; Keyboard interrupt 0x21
+int21h:
+	cli
+	pushad
+	call int21_handler ; C function
+	popad
+	sti
+	iret
 
 ; Generic routing for no mapped interrupt
 no_interrupt:
@@ -26,12 +35,9 @@ no_interrupt:
 	popad
 	sti
 	iret
-
-; Keyboard interrupt 0x21
-int21h:
-	cli
-	pushad
-	call int21_handler ; C function
-	popad
+enable_interrupts:
 	sti
-	iret
+	ret
+disable_interrupts:
+	cli
+	ret

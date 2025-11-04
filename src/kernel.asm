@@ -37,11 +37,7 @@ _start:
 	; Additional configuration data
 	mov al, 00000001b 
 	out 0x21, al
-
-
-        ; Enable interrupts
-	sti
-
+	
 	call kernel_main
 	jmp $
 

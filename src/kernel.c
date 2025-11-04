@@ -52,8 +52,17 @@ void kernel_main() {
   // base_framebuffer[0] = 0x0341; // Endianess makes it 0x41 0x3 - letter 'A' color green
 
   write_string("Hello world\nThis is a BRAND NEW OS!\n");
-  idt_init();
+
+  // Heap initialisation
   kheap_init();
+
+  // Interrupt global table initialisation
+  idt_init();
+
+  // We're now ready to enable interrupts
+  enable_interrupts();
+
+  // Little test around the heap
   size_t m1 = 50;
   size_t m2 = 5000;
 
@@ -63,7 +72,7 @@ void kernel_main() {
   kfree(ptr1);
   ptr1 = kmalloc(m2);
 
-  if (ptr == 0 || ptr1 == 0 || ptr2)
+  if (ptr == 0 || ptr1 == 0 || ptr2 )
   {
  	write_string("Could not allocate 50 bytes");
   }
