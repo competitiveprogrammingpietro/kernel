@@ -32,7 +32,7 @@ void* heap_malloc(struct heap * heap, size_t size)
 
         if (size % PEACHOS_HEAP_BLOCK_SIZE == 0)
 	{
-		blocks_number = size;
+		blocks_number = size/PEACHOS_HEAP_BLOCK_SIZE;
 	}
 	else
 	{

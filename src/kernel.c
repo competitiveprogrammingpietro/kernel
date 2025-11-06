@@ -1,6 +1,7 @@
 #include "kernel.h"
 #include "idt/idt.h"
 #include "io/io.h"
+#include "memory/paging/paging.h"
 #include "memory/heap/kheap.h"
 #include <stdint.h>
 
@@ -8,8 +9,12 @@
 #define COLOR_TERMINAL(c,col) ((col << 8) | c)
 extern void divide_by_zero_error();
 
+// Video memory stuff
 uint16_t * video_memory = 0;
 uint16_t current_col, current_row;
+
+// Kernel paging stuff
+struct page_directory_4GB* kernel_page_directory = 0;
 
 // Simple function to write a string on the screen
 void write_string(char * str) {
@@ -58,6 +63,13 @@ void kernel_main() {
 
   // Interrupt global table initialisation
   idt_init();
+
+  // Initialise the kernel page directory and load it up
+  kernel_page_directory = page_directory_new( PAGING_IS_WRITEABLE 
+					       | PAGING_IS_PRESENT 
+					       | PAGING_ACCESS_FROM_ALL);
+  
+  paging_switch(kernel_page_directory->entry);
 
   // We're now ready to enable interrupts
   enable_interrupts();
