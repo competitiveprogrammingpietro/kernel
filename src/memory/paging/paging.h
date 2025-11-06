@@ -14,6 +14,7 @@
 #define PAGING_ENTRIES_PER_TABLE  1024
 #define PAGING_PAGE_SIZE 	  4096
 
+#define PAGE_IS_ALIGNED(ptr) (((uint32_t)ptr) % PAGING_PAGE_SIZE == 0)
 
 // Each directory addresses 4GB.
 struct page_directory_4GB
@@ -23,5 +24,7 @@ struct page_directory_4GB
 
 struct page_directory_4GB* page_directory_new(uint8_t flags);
 void paging_switch(uint32_t* directory);
-void enable_paging(); // Implemeted in assembly
+void enable_paging(); // Implemented in assembly
+int virtual_address_extract_directory_page_idxs(void*, uint32_t*, uint32_t*);
+int map_page_into_address(uint32_t*, void*, uint32_t );
 #endif

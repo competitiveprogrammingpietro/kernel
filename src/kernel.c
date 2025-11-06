@@ -14,7 +14,7 @@ uint16_t * video_memory = 0;
 uint16_t current_col, current_row;
 
 // Kernel paging stuff
-struct page_directory_4GB* kernel_page_directory = 0;
+static struct page_directory_4GB* kernel_page_directory;
 
 // Simple function to write a string on the screen
 void write_string(char * str) {
@@ -56,7 +56,6 @@ void kernel_main() {
   current_col = current_row = 0;
   // base_framebuffer[0] = 0x0341; // Endianess makes it 0x41 0x3 - letter 'A' color green
 
-  write_string("Hello world\nThis is a BRAND NEW OS!\n");
 
   // Heap initialisation
   kheap_init();
@@ -65,30 +64,31 @@ void kernel_main() {
   idt_init();
 
   // Initialise the kernel page directory and load it up
-  kernel_page_directory = page_directory_new( PAGING_IS_WRITEABLE 
-					       | PAGING_IS_PRESENT 
-					       | PAGING_ACCESS_FROM_ALL);
-  
+  kernel_page_directory = page_directory_new( PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
+
   paging_switch(kernel_page_directory->entry);
 
+  size_t m1 = 50;
+  void * ptr = kmalloc(m1);
+
+  // Remap virtual adress to different physical to test that paging is working
+  // correctly. The magic will happen as address 0x1000 is remapped to ptr
+  if (map_page_into_address(kernel_page_directory->entry, (void*) 0x1000, (uint32_t)ptr | PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE ) < 0)
+  {
+ 	write_string("Could not map mem page");
+  }
+  enable_paging();
+
+  char* remapptr = (char*) 0x1000;
+  remapptr[0] = 'A';
+  remapptr[1] = 'B';
+  write_string(ptr);
+  write_string(remapptr);
+  
   // We're now ready to enable interrupts
   enable_interrupts();
 
-  // Little test around the heap
-  size_t m1 = 50;
-  size_t m2 = 5000;
-
-  void * ptr = kmalloc(m1);
-  void * ptr1 = kmalloc(m2);
-  void * ptr2 = kmalloc(m2);
-  kfree(ptr1);
-  ptr1 = kmalloc(m2);
-
-  if (ptr == 0 || ptr1 == 0 || ptr2 )
-  {
- 	write_string("Could not allocate 50 bytes");
-  }
-
+  write_string("\n\n\nHello world\nThis is a BRAND NEW OS!\n");
 }
 
 
