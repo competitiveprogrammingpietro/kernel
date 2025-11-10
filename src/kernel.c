@@ -3,6 +3,10 @@
 #include "io/io.h"
 #include "memory/paging/paging.h"
 #include "memory/heap/kheap.h"
+#include "disk/disk.h"
+#include "disk/streamer.h"
+#include "string/string.h"
+#include "fs/pparser.h"
 #include <stdint.h>
 
 
@@ -49,7 +53,7 @@ void kernel_main() {
   /* Blank out the screen */
   for (int i = 0; i < VGA_ROWS; i++) {
   	for (int j = 0; j < VGA_COLS; j++) {
-		video_memory[i * VGA_COLS + j] = COLOR_TERMINAL(' ', 0x0);
+		video_memory[i * VGA_COLS + j] = COLOR_TERMINAL(' ', 0x1);
 	}
   }
 
@@ -63,11 +67,16 @@ void kernel_main() {
   // Interrupt global table initialisation
   idt_init();
 
+   disk_init();
+
   // Initialise the kernel page directory and load it up
   kernel_page_directory = page_directory_new( PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
 
   paging_switch(kernel_page_directory->entry);
 
+  enable_paging();
+  /* Test for paging 
+  */
   size_t m1 = 50;
   void * ptr = kmalloc(m1);
 
@@ -77,7 +86,6 @@ void kernel_main() {
   {
  	write_string("Could not map mem page");
   }
-  enable_paging();
 
   char* remapptr = (char*) 0x1000;
   remapptr[0] = 'A';
@@ -89,6 +97,18 @@ void kernel_main() {
   enable_interrupts();
 
   write_string("\n\n\nHello world\nThis is a BRAND NEW OS!\n");
+
+  // Test the disk stremer stuff
+  struct disk_stream * ds = disk_stream_new(0);
+  
+  disk_stream_seek(ds, 0x51e);
+  unsigned char byte;
+  disk_stream_read(ds, &byte, 1);
+  while(1)
+  {
+     char out[2] = { (char) byte, (char) 0 };
+     write_string(out);
+  }
 }
 
 

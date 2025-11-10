@@ -6,6 +6,7 @@ gdb target remote | qemu-system-x86_64 -hda boot.bin -S -gdb stdio
 
 # Disassemble
 ndisasm program
+bless ./program
 
 # Compile the compiler
 

@@ -5,5 +5,6 @@
 #define EIO 1
 #define EINVARGS 2
 #define ENONMEM 3
+#define EBADPATH 4
 
 #endif

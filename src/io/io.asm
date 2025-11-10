@@ -39,8 +39,8 @@ outb:
 	mov ebp, esp
 
 	xor eax, eax
-	mov eax, [ebp+8]
-	mov edx, [ebp+12]
+	mov edx, [ebp+8]
+	mov eax, [ebp+12]
 	out dx, al
 	
 	pop ebp
@@ -53,8 +53,8 @@ outw:
 	mov ebp, esp
 
 	xor eax, eax
-	mov eax, [ebp+8]
-	mov edx, [ebp+12]
+	mov edx, [ebp+8]
+	mov eax, [ebp+12]
 	out dx, ax
 	
 	pop ebp
