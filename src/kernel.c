@@ -53,12 +53,13 @@ void kernel_main() {
   /* Blank out the screen */
   for (int i = 0; i < VGA_ROWS; i++) {
   	for (int j = 0; j < VGA_COLS; j++) {
-		video_memory[i * VGA_COLS + j] = COLOR_TERMINAL(' ', 0x1);
+		video_memory[i * VGA_COLS + j] = COLOR_TERMINAL(' ', 0x0);
 	}
   }
 
   current_col = current_row = 0;
   // base_framebuffer[0] = 0x0341; // Endianess makes it 0x41 0x3 - letter 'A' color green
+  write_string("\n\n\nHello world\nThis is a BRAND NEW OS!\n");
 
 
   // Heap initialisation
@@ -96,8 +97,8 @@ void kernel_main() {
   // We're now ready to enable interrupts
   enable_interrupts();
 
-  write_string("\n\n\nHello world\nThis is a BRAND NEW OS!\n");
 
+  /*
   // Test the disk stremer stuff
   struct disk_stream * ds = disk_stream_new(0);
   
@@ -109,7 +110,9 @@ void kernel_main() {
      char out[2] = { (char) byte, (char) 0 };
      write_string(out);
   }
+  */
 }
+
 
 
 

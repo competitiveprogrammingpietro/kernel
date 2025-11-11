@@ -15,8 +15,13 @@ FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign
 
 all: ./bin/boot.bin  ./bin/kernel.bin
 	dd if=./bin/boot.bin > ./bin/os.bin
-	dd if=./bin/kernel.bin >> ./bin/os.bin # It might not take a whole sector
-	dd if=/dev/zero bs=512 count=100 >> ./bin/os.bin
+	dd if=./bin/kernel.bin >> ./bin/os.bin
+
+	# I'd rather to it outside the Makefile, next time. 16MB filesystem
+	dd if=/dev/zero bs=1048576 count=16 >> ./bin/os.bin
+	sudo mount -t vfat ./bin/os.bin /mnt/d
+	sudo cp ./file.txt /mnt/d
+	sudo umount /mnt/d
 
 ./bin/boot.bin: ./src/boot/boot.asm
 	nasm -f bin src/boot/boot.asm -o bin/boot.bin 
