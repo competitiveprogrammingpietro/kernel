@@ -26,7 +26,8 @@ int disk_stream_seek(struct disk_stream* stream, int pos)
 }
 
 
-
+// The disk stream set of functions do not have any concept of filesystems, hence
+// this function merely reads 512 bytes from the disk, that is, a sector
 int disk_stream_read(struct disk_stream* stream, void * out, int total)
 {
 	int disk_sector = stream->pos / PEACHOS_SECTOR_SIZE;
@@ -66,7 +67,7 @@ int disk_stream_read(struct disk_stream* stream, void * out, int total)
 	return disk_stream_read(stream, out, total - PEACHOS_SECTOR_SIZE);
 }
 
-void disk_stream_free(struct disk_stream* stream)
+void disk_stream_close(struct disk_stream* stream)
 {
 	kfree(stream);
 }

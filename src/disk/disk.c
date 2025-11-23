@@ -4,7 +4,7 @@
 #include "status.h"
 #include "memory/heap/kheap.h"
 
-static struct disk* disks;
+struct disk* disks;
 
 static int disk_read_sector(int lba, int total, void* buf);
 void disk_init()
@@ -14,6 +14,7 @@ void disk_init()
 	disks = kzalloc(sizeof(struct disk));
 	disks[0].type = PEACHOS_DISK_TYPE_REAL;
 	disks[0].sector_size = PEACHOS_SECTOR_SIZE;
+	disks[0].filesystem = fs_resolve(&disks[0]);
 }
 
 

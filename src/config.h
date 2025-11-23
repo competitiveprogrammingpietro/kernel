@@ -14,4 +14,12 @@
 // Hard disks stuff
 #define PEACHOS_SECTOR_SIZE 512
 
+// Filesystems related section
+
+// This is the maximum number of filesystem types this OS allows
+#define PEACHOS_MAX_FILESYSTEMS      12
+
+// Max number of file descriptors
+#define PEACHOS_MAX_FILE_DESCRIPTORS 512
+
 #endif

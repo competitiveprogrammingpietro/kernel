@@ -7,6 +7,7 @@
 #include "disk/streamer.h"
 #include "string/string.h"
 #include "fs/pparser.h"
+#include "fs/fs.h"
 #include <stdint.h>
 
 
@@ -68,7 +69,9 @@ void kernel_main() {
   // Interrupt global table initialisation
   idt_init();
 
-   disk_init();
+  fs_init();
+
+  disk_init();
 
   // Initialise the kernel page directory and load it up
   kernel_page_directory = page_directory_new( PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
@@ -77,7 +80,6 @@ void kernel_main() {
 
   enable_paging();
   /* Test for paging 
-  */
   size_t m1 = 50;
   void * ptr = kmalloc(m1);
 
@@ -85,7 +87,7 @@ void kernel_main() {
   // correctly. The magic will happen as address 0x1000 is remapped to ptr
   if (map_page_into_address(kernel_page_directory->entry, (void*) 0x1000, (uint32_t)ptr | PAGING_ACCESS_FROM_ALL | PAGING_IS_PRESENT | PAGING_IS_WRITEABLE ) < 0)
   {
- 	write_string("Could not map mem page");
+   	write_string("Could not map mem page");
   }
 
   char* remapptr = (char*) 0x1000;
@@ -93,7 +95,7 @@ void kernel_main() {
   remapptr[1] = 'B';
   write_string(ptr);
   write_string(remapptr);
-  
+  */  
   // We're now ready to enable interrupts
   enable_interrupts();
 

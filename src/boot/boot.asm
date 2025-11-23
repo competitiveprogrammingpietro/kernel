@@ -179,4 +179,4 @@ ata_lba_read:
 	
 
 times 510-($ - $$) db 0 ; fill 510 bytes padding with zeros after code
-dw 0xAA55 ; 55AA little indian intel
+dw 0xAA55 ; 55AA little indian intel - that is the boot signature that makes it bootable

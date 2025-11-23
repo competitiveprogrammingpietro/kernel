@@ -27,3 +27,17 @@ int memcmp(void* s1, void* s2, int count)
     	}
 	return 0;
 }
+
+void* memcpy(void* dst, void* src, int len)
+{
+	char* cd = dst;
+	char* cs = src;
+	
+	while(len--)
+	{
+		*cd = *cs;
+		cd++;
+		cs++;
+	}
+	return dst;
+}
