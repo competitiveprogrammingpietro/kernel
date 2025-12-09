@@ -298,24 +298,6 @@ void fat16_get_normalized_filename(struct fat_directory_item* item, char* out, i
     }
 }
 
-struct fat_directory_item* fat16_clone_directory_item(struct fat_directory_item* item, int size)
-{
-    struct fat_directory_item* item_copy = 0;
-    if (size < sizeof(struct fat_directory_item))
-    {
-        return 0;
-    }
-
-    item_copy = kzalloc(size);
-    if (!item_copy)
-    {
-        return 0;
-    }
-
-    memcpy(item_copy, item, size);
-    return item_copy;
-}
-
 static uint32_t fat16_get_first_cluster(struct fat_directory_item* item)
 {
     return (item->high_16_bits_first_cluster) | item->low_16_bits_first_cluster;
