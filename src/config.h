@@ -11,10 +11,13 @@
 #define PEACHOS_HEAP_ADDRESS    0x01000000
 #define PEACHOS_HEAP_TABLE_ADDRESS 0x00007E00
 
+
+
 // Hard disks stuff
 #define PEACHOS_SECTOR_SIZE 512
 
 // Filesystems related section
+#define PEACHOS_MAX_PATH 108
 
 // This is the maximum number of filesystem types this OS allows
 #define PEACHOS_MAX_FILESYSTEMS      12

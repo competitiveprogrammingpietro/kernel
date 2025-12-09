@@ -133,21 +133,23 @@ int fopen(const char* filename, const char* mode)
     FILE_MODE file_mode = file_get_mode_by_string(mode);
     if (file_mode == FILE_MODE_INVALID)
     {
-        return -EINVARGS;
+        res = -EINVARGS;
     }
 
     void* descriptor_private_data = disk->filesystem->open(disk, root_path->first, file_mode);
     if (ISERR(descriptor_private_data))
     {
-        res = ERROR_I(descriptor_private_data);
+        res =  ERROR_I(descriptor_private_data);
     }
+    
+    if (res < 0)
+    {
+        return 0; // There is a slightly confusing mismatch as we receive a value < 0 and return 0
+    }
+
 
     struct file_descriptor* desc = 0;
     res = file_new_descriptor(&desc);
-    if (res < 0)
-    {
-        return res;
-    }
     desc->filesystem = disk->filesystem;
     desc->private = descriptor_private_data;
     desc->disk = disk;
