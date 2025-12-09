@@ -113,10 +113,10 @@ void kernel_main() {
      write_string(out);
   }
   */
-   int fd = fopen("0:/file2.txt", "r");
+   int fd = fopen("0:/file.txt", "r");
     if (fd)
     {
-        write_string("We opened file2.txt\n");
+        write_string("We opened file.txt\n");
     }
     while (1) {}
 }

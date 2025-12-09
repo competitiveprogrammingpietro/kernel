@@ -316,6 +316,7 @@ static uint32_t fat16_get_first_fat_sector(struct fat_private* private)
     return private->header.primary_header.reserved_sectors;
 }
 
+// This function reads from the FAT table and return the next cluster
 static int fat16_get_fat_entry(struct disk* disk, int cluster)
 {
     int res = -1;
@@ -323,26 +324,24 @@ static int fat16_get_fat_entry(struct disk* disk, int cluster)
     struct disk_stream* stream = private->fat_read_stream;
     if (!stream)
     {
-        goto out;
+        return -EIO;
     }
 
     uint32_t fat_table_position = fat16_get_first_fat_sector(private) * disk->sector_size;
     res = disk_stream_seek(stream, fat_table_position * (cluster * PEACHOS_FAT16_FAT_ENTRY_SIZE));
     if (res < 0)
     {
-        goto out;
+        return res;
     }
 
     uint16_t result = 0;
     res = disk_stream_read(stream, &result, sizeof(result));
     if (res < 0)
     {
-        goto out;
+        return res;
     }
 
-    res = result;
-out:
-    return res;
+    return result;
 }
 
 static int fat16_get_cluster_for_offset(struct disk* disk, int starting_cluster, int offset)
