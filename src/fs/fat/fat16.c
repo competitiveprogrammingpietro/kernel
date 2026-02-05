@@ -1,3 +1,11 @@
+/*
+ * I wrote all the code myself and then I found myself in spending loong time
+ * in debugging the fread() functionality. I'd still like to come back to it
+ * but for the sake of time all the below is a copy of the course repository
+ * at: https://github.com/nibblebits/PeachOS/commit/80ac7483493b0b9862c1ef083d811944370ab1af
+ * My work restart with the pretty simple stat() functionality, you will recognise
+ * the missing goto which I don't like.
+ */
 #include "fat16.h"
 #include "string/string.h"
 #include "disk/disk.h"
@@ -124,13 +132,15 @@ int fat16_resolve(struct disk *disk);
 void *fat16_open(struct disk *disk, struct path_part *path, FILE_MODE mode);
 int fat16_read(struct disk *disk, void *descriptor, uint32_t size, uint32_t nmemb, char *out_ptr);
 int fat16_seek(void *private, uint32_t offset, FILE_SEEK_MODE seek_mode);
+int fat16_stat(struct disk *disk, void *private, struct file_stat *stat);
 
 struct filesystem fat16_fs =
     {
         .resolve = fat16_resolve,
         .open = fat16_open,
         .read = fat16_read,
-        .seek = fat16_seek};
+        .seek = fat16_seek,
+        .stat = fat16_stat};
 
 struct filesystem *fat16_init()
 {
@@ -693,5 +703,27 @@ int fat16_seek(void *private, uint32_t offset, FILE_SEEK_MODE seek_mode)
         break;
     }
 out:
+    return res;
+}
+
+int fat16_stat(struct disk *disk, void *private, struct file_stat *stat)
+{
+    int res = 0;
+    struct fat_file_descriptor *descriptor = (struct fat_file_descriptor *)private;
+    struct fat_item *desc_item = descriptor->item;
+    if (desc_item->type != FAT_ITEM_TYPE_FILE)
+    {
+        return -EINVARGS;
+    }
+
+    struct fat_directory_item *ritem = desc_item->item;
+    stat->filesize = ritem->filesize;
+    stat->flags = 0x00;
+
+    // That is all we set for now
+    if (ritem->attribute & FAT_FILE_READ_ONLY)
+    {
+        stat->flags |= FILE_STAT_READ_ONLY;
+    }
     return res;
 }

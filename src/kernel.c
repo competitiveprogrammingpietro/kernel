@@ -23,12 +23,15 @@ static struct page_directory_4GB *kernel_page_directory;
 // Simple function to write a string on the screen
 void print(char *str)
 {
-  return write_string(str);
+  while (*str)
+  {
+    write_char(*str);
+    str++;
+  }
 }
 
 void write_string(char *str)
 {
-
   while (*str)
   {
 
@@ -55,6 +58,24 @@ void write_string(char *str)
   return;
 }
 
+void write_char(char c)
+{
+
+  if (c == '\n')
+  {
+    current_col = 0;
+    current_row = (current_row + 1) % VGA_ROWS;
+  }
+
+  video_memory[current_row * VGA_COLS + current_col] = COLOR_TERMINAL(c, 0x2);
+  current_col = (current_col + 1) % VGA_COLS;
+  if (current_col == 0)
+  {
+    current_row = (current_row + 1) % VGA_ROWS;
+  }
+  return;
+}
+
 // AI generated method to write a binary
 void print_u32_binary(unsigned int x)
 {
@@ -77,9 +98,36 @@ void print_u32_binary(unsigned int x)
   write_string("\n");
 }
 
+void print_u32_hex(unsigned int x)
+{
+  static const char hex[] = "0123456789abcdef";
+
+  // Special-case 0 so we print at least one digit
+  if (x == 0)
+  {
+    write_char('0');
+    return;
+  }
+
+  // Find highest non-zero nibble (4-bit chunk)
+  int shift = 28;
+  while (shift > 0 && ((x >> shift) & 0xFu) == 0)
+    shift -= 4;
+
+  // Print from highest nibble down
+  for (; shift >= 0; shift -= 4)
+  {
+    write_char(hex[(x >> shift) & 0xFu]);
+  }
+}
+
 void kernel_main()
 {
 
+  int a = 0;
+  a = 1;
+
+  current_col = a;
   video_memory = (uint16_t *)0xB8000;
 
   /* Blank out the screen */
@@ -92,12 +140,22 @@ void kernel_main()
   }
 
   current_col = current_row = 0;
+
+  print_u32_binary((unsigned int)a);
+  print_u32_hex((unsigned int)a);
+
   // base_framebuffer[0] = 0x0341; // Endianess makes it 0x41 0x3 - letter 'A' color green
   write_string("\n\n\nHello world\nThis is a BRAND NEW OS!\n");
 
+  return;
   // Heap initialisation
   kheap_init();
 
+  while (1)
+  {
+    void *ptr = kzalloc(58);
+    print_u32_binary((unsigned int)ptr);
+  }
   // Interrupt global table initialisation
   idt_init();
 
@@ -115,18 +173,15 @@ void kernel_main()
   enable_interrupts();
 
   int fd = fopen("0:/file.txt", "r");
-  print_u32_binary(fd);
   if (fd > 0)
   {
     char buf[14];
-    write_string("We opened file.txt\n");
     fread(buf, 13, 1, fd);
-    write_string("We read\n");
     buf[13] = 0x0;
     print(buf);
-    unsigned int tmp = buf[0];
-    print_u32_binary(tmp);
-    write_string("We ended file.txt\n");
+    struct file_stat fs;
+    fstat(fd, &fs);
+    print("OK");
   }
   while (1)
   {
