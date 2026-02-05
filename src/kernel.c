@@ -21,7 +21,7 @@ uint16_t current_col, current_row;
 static struct page_directory_4GB *kernel_page_directory;
 
 // Simple function to write a string on the screen
-void print(char *str)
+void print(const char *str)
 {
   while (*str)
   {
@@ -99,6 +99,14 @@ void print_u32_hex(unsigned int x)
   }
 }
 
+void panic(const char *msg)
+{
+  print(msg);
+  while (1)
+  {
+  }
+}
+
 void kernel_main()
 {
 
@@ -136,6 +144,8 @@ void kernel_main()
     i++;
   }
   */
+
+  panic("The system cannot complete");
 
   // Interrupt global table initialisation
   idt_init();
