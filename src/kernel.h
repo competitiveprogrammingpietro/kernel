@@ -4,10 +4,12 @@
 #define VGA_COLS 80
 #define VGA_ROWS 20
 #define PEACHOS_MAX_PATH 108
-#define COLOR_TERMINAL(c,col) ((col << 8) | c)
-#define ERROR(value) (void*)(value)
+#define COLOR_TERMINAL(c, col) ((col << 8) | c)
+#define ERROR(value) (void *)(value)
 #define ERROR_I(value) (int)(value)
-#define ISERR(value) ((int) value < 0)
-void write_string(char * str);
+#define ISERR(value) ((int)value < 0)
+void write_string(char *str);
+void print(char *str);
 void kernel_main();
+void print_u32_binary(unsigned int x);
 #endif
