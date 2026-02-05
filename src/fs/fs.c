@@ -56,6 +56,12 @@ void fs_init()
     fs_load();
 }
 
+static void file_free_descriptor(struct file_descriptor *desc)
+{
+    file_descriptors[desc->index - 1] = 0x00; // Mark it as free
+    kfree(desc);
+}
+
 static int file_new_descriptor(struct file_descriptor **desc_out)
 {
     int res = -ENOMEM;
@@ -232,5 +238,22 @@ int fread(void *ptr, uint32_t size, uint32_t nmemb, int fd)
 
     res = desc->filesystem->read(desc->disk, desc->private, size, nmemb, (char *)ptr);
 out:
+    return res;
+}
+
+int fclose(int fd)
+{
+    int res = 0;
+    struct file_descriptor *desc = file_get_descriptor(fd);
+    if (!desc)
+    {
+        return -EIO;
+    }
+
+    res = desc->filesystem->close(desc->private);
+    if (res == PEACHOS_OK)
+    {
+        file_free_descriptor(desc);
+    }
     return res;
 }
