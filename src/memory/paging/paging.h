@@ -24,14 +24,21 @@
 #define PAGE_IS_ALIGNED(ptr) (((uint32_t)ptr) % PAGING_PAGE_SIZE == 0)
 
 // Each directory addresses 4GB.
-struct page_directory_4GB
+struct paging_page_directory
 {
     uint32_t *entry;
 };
 
-struct page_directory_4GB *page_directory_new(uint8_t flags);
-void paging_switch(uint32_t *directory);
-void enable_paging(); // Implemented in assembly
-int virtual_address_extract_directory_page_idxs(void *, uint32_t *, uint32_t *);
-int map_page_into_address(uint32_t *, void *, uint32_t);
+struct paging_page_directory *paging_page_directory_new(uint8_t flags);
+void paging_page_directory_switch(uint32_t *directory);
+void paging_enable(); // Implemented in assembly
+int paging_map_single_page(uint32_t *, void *, uint32_t);
+void paging_page_directory_free(struct paging_page_directory *d);
+int paging_map_directory(
+    uint32_t *directory,
+    void *virt,
+    void *phys,
+    void *phys_end,
+    int flags);
+void *paging_align_address(void *ptr);
 #endif

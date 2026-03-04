@@ -1,6 +1,6 @@
 #include "string.h"
 
-int strlen(const char* ptr)
+int strlen(const char *ptr)
 {
 	int size = 0;
 	while (*ptr)
@@ -8,12 +8,11 @@ int strlen(const char* ptr)
 		size++;
 		ptr++;
 	}
-	
+
 	return size;
 }
 
-
-int strnlen(const char* ptr, int max)
+int strnlen(const char *ptr, int max)
 {
 	int size = 0;
 	for (size = 0; size < max; size++)
@@ -24,7 +23,6 @@ int strnlen(const char* ptr, int max)
 	return size;
 }
 
-
 int isdigit(char c)
 {
 	return c >= 48 && c <= 57;
@@ -34,11 +32,10 @@ int isdigit(char c)
 // '0' is 48, means, 48 - 48 = 0
 int tonumericdigit(char c)
 {
-	return c-48;
+	return c - 48;
 }
 
-
-char* strcpy(char* dest, const char* src)
+char *strcpy(char *dest, const char *src)
 {
 	while (*src != 0)
 	{
@@ -51,6 +48,21 @@ char* strcpy(char* dest, const char* src)
 	return dest;
 }
 
+char *strncpy(char *dest, const char *src, int count)
+{
+	int i = 0;
+	for (i = 0; i < count - 1; i++)
+	{
+		if (src[i] == 0)
+			break;
+
+		dest[i] = src[i];
+	}
+
+	dest[i] = 0; // End of string marker
+	return dest;
+}
+
 char tolower(char s)
 {
 	if (s < 65 || s > 90)
@@ -60,19 +72,19 @@ char tolower(char s)
 	return s + 32;
 }
 
-char strncmp(const char* s1, const char* s2, int n)
+char strncmp(const char *s1, const char *s2, int n)
 {
 	while (n > 0)
 	{
-		unsigned char c1 = (unsigned char) *s1;
-		unsigned char c2 = (unsigned char) *s2;
+		unsigned char c1 = (unsigned char)*s1;
+		unsigned char c2 = (unsigned char)*s2;
 
 		if (c1 != c2)
 		{
 			return c1 - c2;
 		}
 
-		if( c1 == '\0')
+		if (c1 == '\0')
 		{
 			return 0; // Equals
 		}
@@ -85,19 +97,19 @@ char strncmp(const char* s1, const char* s2, int n)
 }
 
 // Same as strncmp but it is case insensitive
-int istrncmp(const char* s1, const char *s2, int n)
+int istrncmp(const char *s1, const char *s2, int n)
 {
 	while (n > 0)
 	{
-		unsigned char c1 = (unsigned char) tolower(*s1);
-		unsigned char c2 = (unsigned char) tolower(*s2);
+		unsigned char c1 = (unsigned char)tolower(*s1);
+		unsigned char c2 = (unsigned char)tolower(*s2);
 
 		if (c1 != c2)
 		{
 			return c1 - c2;
 		}
 
-		if( c1 == '\0')
+		if (c1 == '\0')
 		{
 			return 0; // Equals
 		}
@@ -109,7 +121,7 @@ int istrncmp(const char* s1, const char *s2, int n)
 	return 0; // Should never end up here if they are NULL terminated
 }
 
-int strnlen_terminator(const char* str, int max, char terminator)
+int strnlen_terminator(const char *str, int max, char terminator)
 {
 	int i = 0;
 	for (i = 0; i < max; i++)
@@ -118,5 +130,4 @@ int strnlen_terminator(const char* str, int max, char terminator)
 			return i;
 	}
 	return i;
-
 }

@@ -10,6 +10,7 @@
 #include "disk/streamer.h"
 #include "fs/pparser.h"
 #include "fs/fs.h"
+#include "tss/tss.h"
 #include "config.h"
 #include <stdint.h>
 
@@ -21,7 +22,7 @@ uint16_t *video_memory = 0;
 uint16_t current_col, current_row;
 
 // Kernel paging stuff
-static struct page_directory_4GB *kernel_page_directory;
+static struct paging_page_directory *kernel_page_directory;
 
 // Simple function to write a string on the screen
 void print(const char *str)
@@ -110,11 +111,17 @@ void panic(const char *msg)
   }
 }
 
+struct tss tss;
+
 struct gdt gdt[PEACHOS_TOTAL_GDT_SEGMENTS];
+
 struct gdt_internal gdt_internal[PEACHOS_TOTAL_GDT_SEGMENTS] = {
-    {.base = 0x00, .limit = 0x00, .type = 0x00},       // NULL Segment
-    {.base = 0x00, .limit = 0xffffffff, .type = 0x9a}, // Kernel code segment
-    {.base = 0x00, .limit = 0xffffffff, .type = 0x92}  // Kernel data segment
+    {.base = 0x00, .limit = 0x00, .type = 0x00},                 // NULL Segment
+    {.base = 0x00, .limit = 0xffffffff, .type = 0x9a},           // Kernel code segment
+    {.base = 0x00, .limit = 0xffffffff, .type = 0x92},           // Kernel data segment
+    {.base = 0x00, .limit = 0xffffffff, .type = 0xf8},           // User code segment
+    {.base = 0x00, .limit = 0xffffffff, .type = 0xf2},           // User data segment
+    {.base = (uint32_t)&tss, .limit = sizeof(tss), .type = 0xE9} // TSS Segment
 };
 
 void kernel_main()
@@ -144,6 +151,46 @@ void kernel_main()
   // Heap initialisation
   kheap_init();
 
+  // Interrupt global table initialisation
+  idt_init();
+
+  // TSS initialisation
+  memset(&tss, 0x00, sizeof(tss));
+  tss.esp0 = 0x600000; // We use such address for the kernel stack
+  tss.ss0 = KERNEL_DATA_SELECTOR;
+
+  // Load the TSS
+  tss_load(0x28);
+  fs_init();
+
+  disk_init();
+
+  // Initialise the kernel page directory and load it up
+  kernel_page_directory = paging_page_directory_new(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
+
+  paging_page_directory_switch(kernel_page_directory->entry);
+
+  paging_enable();
+
+  enable_interrupts();
+
+  int fd = fopen("0:/file.txt", "r");
+  if (fd > 0)
+  {
+    char buf[25];
+    fread(buf, 25, 1, fd);
+    buf[25] = 0x0;
+    print(buf);
+    print("\n");
+    struct file_stat fs;
+    fstat(fd, &fs);
+    fclose(fd);
+    print("\nOK.\n");
+  }
+  while (1)
+  {
+  }
+
   /*
     // Test my precious functions
     print_u32_binary((unsigned int)0x10);
@@ -158,38 +205,4 @@ void kernel_main()
      i++;
    }
  */
-
-  // Interrupt global table initialisation
-  idt_init();
-
-  fs_init();
-
-  disk_init();
-
-  // Initialise the kernel page directory and load it up
-  kernel_page_directory = page_directory_new(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
-
-  paging_switch(kernel_page_directory->entry);
-
-  enable_paging();
-
-  enable_interrupts();
-
-  int fd = fopen("0:/file.txt", "r");
-  if (fd > 0)
-  {
-    char buf[25];
-    fread(buf, 25, 1, fd);
-    buf[25] = 0x0;
-    print(buf);
-    print("\n");
-    struct file_stat fs;
-    fstat(fd, &fs);
-    print_u32_hex((unsigned int)&fs);
-    fclose(fd);
-    print("OK");
-  }
-  while (1)
-  {
-  }
 }
