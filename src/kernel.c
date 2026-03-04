@@ -1,13 +1,16 @@
 #include "kernel.h"
 #include "idt/idt.h"
+#include "gdt/gdt.h"
 #include "io/io.h"
 #include "memory/paging/paging.h"
 #include "memory/heap/kheap.h"
+#include "memory/memory.h"
+#include "string/string.h"
 #include "disk/disk.h"
 #include "disk/streamer.h"
-#include "string/string.h"
 #include "fs/pparser.h"
 #include "fs/fs.h"
+#include "config.h"
 #include <stdint.h>
 
 #define COLOR_TERMINAL(c, col) ((col << 8) | c)
@@ -107,6 +110,13 @@ void panic(const char *msg)
   }
 }
 
+struct gdt gdt[PEACHOS_TOTAL_GDT_SEGMENTS];
+struct gdt_internal gdt_internal[PEACHOS_TOTAL_GDT_SEGMENTS] = {
+    {.base = 0x00, .limit = 0x00, .type = 0x00},       // NULL Segment
+    {.base = 0x00, .limit = 0xffffffff, .type = 0x9a}, // Kernel code segment
+    {.base = 0x00, .limit = 0xffffffff, .type = 0x92}  // Kernel data segment
+};
+
 void kernel_main()
 {
 
@@ -123,29 +133,31 @@ void kernel_main()
 
   current_col = current_row = 0;
 
-  // Test my precious functions
-  // print_u32_binary((unsigned int)0x10);
-  // print_u32_hex((unsigned int)0xf0);
-
   // base_framebuffer[0] = 0x0341; // Endianess makes it 0x41 0x3 - letter 'A' color green
-  write_string("\n\n\nHello world\nThis is a BRAND NEW OS!\n");
+  print("\n\n\nThis is Pietro's OS ...\n\t*brand* new!\n");
+
+  // Initialise GDT
+  memset(gdt, 0x00, sizeof(gdt));
+  gdt_internal_to_gdt(gdt, gdt_internal, PEACHOS_TOTAL_GDT_SEGMENTS);
+  gdt_load(gdt, sizeof(gdt));
 
   // Heap initialisation
   kheap_init();
 
-  // Test heap addresses
   /*
-  int i = 0;
-  while (i < 10)
-  {
-    void *ptr = kzalloc(58);
-    print_u32_hex((unsigned int)ptr);
-    print("\n");
-    i++;
-  }
-  */
-
-  panic("The system cannot complete");
+    // Test my precious functions
+    print_u32_binary((unsigned int)0x10);
+    // Test heap addresses
+    print_u32_hex((unsigned int)0xf0);
+    int i = 0;
+    while (i < 10)
+   {
+     void *ptr = kzalloc(58);
+     print_u32_hex((unsigned int)ptr);
+     print("\n");
+     i++;
+   }
+ */
 
   // Interrupt global table initialisation
   idt_init();

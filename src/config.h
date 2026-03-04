@@ -25,4 +25,7 @@
 // Max number of file descriptors
 #define PEACHOS_MAX_FILE_DESCRIPTORS 512
 
+// Paging
+#define PEACHOS_TOTAL_GDT_SEGMENTS 3
+
 #endif

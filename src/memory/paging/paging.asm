@@ -19,7 +19,7 @@ enable_paging:
     push ebp
     mov ebp, esp
     mov eax, cr0
-    or eax, 0x80000000
+    or eax, 0x80000000 ;; This writes on the PG bit, thus enabling paging
     mov cr0, eax
     pop ebp
     ret
