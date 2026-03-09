@@ -13,7 +13,7 @@ OBJ_ASM := $(patsubst src/%.asm, build/%.asm.o, $(FILES_ASM))
 INCLUDES = -I./src
 FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-labels -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-functions -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameters -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
 
-all: ./bin/boot.bin  ./bin/kernel.bin
+all: ./bin/boot.bin  ./bin/kernel.bin user_programs
 	dd if=./bin/boot.bin > ./bin/os.bin
 	dd if=./bin/kernel.bin >> ./bin/os.bin
 
@@ -46,12 +46,16 @@ build/%.asm.o: src/%.asm
 	@mkdir -p $(@D)
 	nasm -f elf -g $< -o $@
 
+user_programs:
+	cd ./programs/simpletest && \
+	$(MAKE) all
 
 clean:
 	echo $(OBJ_C) $(OBJ_ASM)
 	echo damn
 	rm -rf ./bin/*.bin
-	rm ./build/kernelfull.o $(FILES) 
+	rm ./build/kernelfull.o $(FILES)
+	cd ./programs/simpletest && $(MAKE) clean
 
 
 

@@ -110,3 +110,23 @@ int task_free(struct task *task)
     kfree(task);
     return 0;
 }
+
+int task_switch(struct task *task)
+{
+    task_user_segments(); // Switch segments to user segment
+    current_task = task;
+    paging_page_directory_switch(task->page_directory->entry);
+    return 0;
+}
+
+// Idiotic function here just for the time being ..
+void task_run_head()
+{
+    if (!current_task)
+    {
+        panic("task_run_first_ever_task(): No current task exists!\n");
+    }
+
+    task_switch(task_head);
+    task_jump_to(&task_head->registers);
+}
