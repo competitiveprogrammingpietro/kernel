@@ -11,7 +11,7 @@ struct gdt
     uint8_t access;
     uint8_t high_flags;
     uint8_t base_24_31_bits;
-};
+} __attribute__((packed));
 
 // This is our internal representation of the GDT entry, which we're going to
 // translate into a GDT entry as x86 commands.
