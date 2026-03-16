@@ -11,7 +11,10 @@
 #include "fs/pparser.h"
 #include "fs/fs.h"
 #include "tss/tss.h"
+#include "task/task.h"
+#include "task/process.h"
 #include "config.h"
+#include "status.h"
 #include <stdint.h>
 
 #define COLOR_TERMINAL(c, col) ((col << 8) | c)
@@ -168,10 +171,18 @@ void kernel_main()
   // Initialise the kernel page directory and load it up
   kernel_page_directory = paging_page_directory_new(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
 
-  paging_page_directory_switch(kernel_page_directory->entry);
+  paging_page_directory_switch(kernel_page_directory);
 
   paging_enable();
 
+  struct process *process;
+  int res = process_load_executable("0:/blank.bin", &process);
+  if (res != PEACHOS_OK)
+  {
+    panic("Failed to load process");
+  }
+  task_run_head();
+  /*
   enable_interrupts();
 
   int fd = fopen("0:/file.txt", "r");
@@ -190,6 +201,7 @@ void kernel_main()
   while (1)
   {
   }
+  */
 
   /*
     // Test my precious functions

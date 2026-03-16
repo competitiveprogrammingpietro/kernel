@@ -30,12 +30,12 @@ struct paging_page_directory
 };
 
 struct paging_page_directory *paging_page_directory_new(uint8_t flags);
-void paging_page_directory_switch(uint32_t *directory);
+void paging_page_directory_switch(struct paging_page_directory *directory);
 void paging_enable(); // Implemented in assembly
-int paging_map_single_page(uint32_t *, void *, uint32_t);
+int paging_map_single_page(struct paging_page_directory *, void *, uint32_t, int);
 void paging_page_directory_free(struct paging_page_directory *d);
 int paging_map_directory(
-    uint32_t *directory,
+    struct paging_page_directory *directory,
     void *virt,
     void *phys,
     void *phys_end,

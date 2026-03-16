@@ -109,7 +109,7 @@ int process_load_executable(
     // Map the loaded exec in virtual addresses, round it up to the nearest page
     // aligned size so we don't fail during the mapping
     r = paging_map_directory(
-        process->task->page_directory->entry,
+        process->task->page_directory,
         (void *)PEACHOS_PROGRAM_VIRTUAL_ADDRESS,
         process->physical_memory,
         paging_align_address(process->physical_memory + process->physical_memory_size),

@@ -20,7 +20,10 @@ all: ./bin/boot.bin  ./bin/kernel.bin user_programs
 	# I'd rather to it outside the Makefile, next time. 16MB filesystem
 	dd if=/dev/zero bs=1048576 count=16 >> ./bin/os.bin
 	sudo mount -t vfat ./bin/os.bin /mnt/d
+	# Copy a sample file so we can test our FAT16 read implementation and
+	# a binary program, our user-space application
 	sudo cp ./file.txt /mnt/d
+	sudo cp ./programs/simpletest/build/blank.bin /mnt/d
 	sudo umount /mnt/d
 
 ./bin/boot.bin: ./src/boot/boot.asm

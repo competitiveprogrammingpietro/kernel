@@ -26,5 +26,7 @@ struct process
     void *stack;
 };
 
-
+int process_load_executable(
+    const char *filename,
+    struct process **rprocess);
 #endif

@@ -50,5 +50,5 @@ int task_free(struct task *task);
 void task_restore_general_purpose_registers(struct registers *registers);
 void task_jump_to(struct registers *registers);
 void task_user_segments();
-
+void task_run_head();
 #endif

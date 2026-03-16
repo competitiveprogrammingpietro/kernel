@@ -5,7 +5,7 @@
 // Implemented in assenbly
 void paging_load_directory(uint32_t *directory);
 
-static uint32_t *current_directory = 0;
+static struct paging_page_directory *current_directory = 0;
 
 /*
  * Initialise a page directory which addresses 4GB of memory, the page table
@@ -50,15 +50,19 @@ void paging_page_directory_free(struct paging_page_directory *directory)
 }
 
 // Load the directory into CR3 and set the global pointer
-void paging_page_directory_switch(uint32_t *directory)
+void paging_page_directory_switch(struct paging_page_directory *directory)
 {
-	paging_load_directory(directory);
+	paging_load_directory(directory->entry);
 	current_directory = directory;
 }
 
 // Given the base address of a virtual page map it into the given physical
 // address
-int paging_map_single_page(uint32_t *directory, void *virtual, uint32_t physical)
+int paging_map_single_page(
+	struct paging_page_directory *directory,
+	void *virtual,
+	uint32_t physical,
+	int flags)
 {
 	// We can only extract those for aligned blocks
 	if (!PAGE_IS_ALIGNED(virtual))
@@ -81,20 +85,20 @@ int paging_map_single_page(uint32_t *directory, void *virtual, uint32_t physical
 	// and discard the last 12
 	table_idx = (((uint32_t)virtual) & 0x0003ffff) >> 12;
 
-	uint32_t dentry = directory[directory_idx];
+	uint32_t dentry = directory->entry[directory_idx];
 
 	// First 20 bits are the page table entry address, discard flags
 	uint32_t *tentry = (uint32_t *)(dentry & 0xfffff000);
 
 	// Set the page to be mapped at that physical address
-	tentry[table_idx] = physical;
+	tentry[table_idx] = physical | flags;
 	return 0;
 }
 
 // paging_map_directory maps the WHOLE directory for the virtual address virt
 // into the phys, this relies in the phys_end being set to cover
 int paging_map_directory(
-	uint32_t *directory,
+	struct paging_page_directory *directory,
 	void *virt,
 	void *phys,
 	void *phys_end,
@@ -134,7 +138,8 @@ int paging_map_directory(
 		res = paging_map_single_page(
 			directory,
 			current_virt,
-			(uint32_t)current_phys | flags);
+			(uint32_t)current_phys,
+			flags);
 
 		if (res != 0)
 			return res;
