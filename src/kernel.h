@@ -15,4 +15,6 @@ void kernel_main();
 void print_u32_binary(unsigned int x);
 void print_u32_hex(unsigned int x);
 void panic(const char *msg);
+void kernel_memory_context();
+void kernel_set_segment_registers();
 #endif

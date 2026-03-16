@@ -5,7 +5,7 @@ section .asm
 global paging_load_directory
 global paging_enable
 
-; Load the page dictionary entry into the CR3
+; Load the page directory entry into the CR3
 paging_load_directory:
     push ebp
     mov ebp, esp
@@ -13,6 +13,7 @@ paging_load_directory:
     mov cr3, eax
     pop ebp
     ret
+    
 
 ; Enable paging https://wiki.osdev.org/Paging#32-bit_Paging
 paging_enable:

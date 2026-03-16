@@ -17,6 +17,27 @@ struct idtr_desc
 	uint32_t base;
 } __attribute__((packed));
 
+// This struct differs slightly from the task's register one - the real difference
+// are the reserved bits however it is good to keep them in different compilation
+// units as they are involved in a different scenarios. This is the state of the
+// CPU when an interrupt was executed, as the ISR sees it.
+struct interrupt_frame
+{
+    uint32_t edi;
+    uint32_t esi;
+    uint32_t ebp;
+    uint32_t reserved;
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t ecx;
+    uint32_t eax;
+    uint32_t ip;
+    uint32_t cs;
+    uint32_t flags;
+    uint32_t esp;
+    uint32_t ss;
+} __attribute__((packed));
+
 void idt_init();
 extern void enable_interrupts();
 extern void disable_interrupts();

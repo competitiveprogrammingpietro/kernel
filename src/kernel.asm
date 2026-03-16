@@ -1,6 +1,7 @@
 [BITS 32]
 global _start ; export that to the external world, otherwise it is not visible
 global divide_by_zero_error
+global kernel_set_segment_registers
 extern kernel_main
 
 CODE_SEG equ 0x8
@@ -45,6 +46,16 @@ _start:
 divide_by_zero_error:
 	mov eax, 0
 	div eax
+
+; Set the segments to the kernel's data segment, that is the third entry of the
+; GDT table, look at kernel.c
+kernel_set_segment_registers:
+    mov ax, 10
+    mov ds, ax
+    mov es, ax
+    mov gs, ax
+    mov fs, ax
+    ret
 
 times 512-($ - $$) db 0 ; fill 512 bytes padding with zeros after code.
 			; this is important to maintain the alignment

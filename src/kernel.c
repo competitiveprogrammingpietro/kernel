@@ -127,6 +127,14 @@ struct gdt_internal gdt_internal[PEACHOS_TOTAL_GDT_SEGMENTS] = {
     {.base = (uint32_t)&tss, .limit = sizeof(tss), .type = 0xE9} // TSS Segment
 };
 
+// Set the CPU's segment registers and the paging directory to the kernel
+// memory areas
+void kernel_memory_context()
+{
+  kernel_set_segment_registers();
+  paging_page_directory_switch(kernel_page_directory);
+}
+
 void kernel_main()
 {
 
