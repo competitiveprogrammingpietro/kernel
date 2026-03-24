@@ -15,6 +15,7 @@
 #include "task/process.h"
 #include "config.h"
 #include "status.h"
+#include "int80h/int80h.h"
 #include <stdint.h>
 
 #define COLOR_TERMINAL(c, col) ((col << 8) | c)
@@ -129,7 +130,7 @@ struct gdt_internal gdt_internal[PEACHOS_TOTAL_GDT_SEGMENTS] = {
 
 // Set the CPU's segment registers and the paging directory to the kernel
 // memory areas
-void kernel_memory_context()
+void kernel_context()
 {
   kernel_set_segment_registers();
   paging_page_directory_switch(kernel_page_directory);
@@ -183,6 +184,7 @@ void kernel_main()
 
   paging_enable();
 
+  int80h_register_commands();
   struct process *process;
   int res = process_load_executable("0:/blank.bin", &process);
   if (res != PEACHOS_OK)

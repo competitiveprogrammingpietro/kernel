@@ -4,13 +4,14 @@
 #include "memory/heap/kheap.h"
 #include "memory/memory.h"
 #include "memory/paging/paging.h"
+#include "idt/idt.h"
 
 // The current task that is running
-struct task *current_task = 0;
+static struct task *current_task = 0;
 
 // Tasks linked list
-struct task *task_tail = 0;
-struct task *task_head = 0;
+static struct task *task_tail = 0;
+static struct task *task_head = 0;
 
 struct task *task_current()
 {
@@ -114,7 +115,7 @@ int task_free(struct task *task)
     return 0;
 }
 
-int task_switch(struct task *task)
+int task_context(struct task *task)
 {
     task_user_segments(); // Switch segments to user segment
     current_task = task;
@@ -130,6 +131,22 @@ void task_run_head()
         panic("task_run_first_ever_task(): No current task exists!\n");
     }
 
-    task_switch(task_head);
+    task_context(task_head);
     task_jump_to(&task_head->registers);
+}
+
+void task_save_state(struct task *task, struct interrupt_frame *frame)
+{
+    task->registers.ip = frame->ip;
+    task->registers.cs = frame->cs;
+    task->registers.flags = frame->flags;
+    task->registers.esp = frame->esp;
+    task->registers.ss = frame->ss;
+    task->registers.eax = frame->eax;
+    task->registers.ebp = frame->ebp;
+    task->registers.ebx = frame->ebx;
+    task->registers.ecx = frame->ecx;
+    task->registers.edi = frame->edi;
+    task->registers.edx = frame->edx;
+    task->registers.esi = frame->esi;
 }

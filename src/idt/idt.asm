@@ -44,7 +44,7 @@ disable_interrupts:
 
 int80h:
     ; Interrupt frame start
-	; The CPU has already pushed to us upon entering this routing: 
+	; The CPU has already pushed to us upon entering this routine: 
     ; uint32_t ip
     ; uint32_t cs;
     ; uint32_t flags

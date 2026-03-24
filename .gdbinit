@@ -4,14 +4,16 @@
 # Useful defaults for kernel work
 #set disassemble-next-line on
 #set confirm off
-set pagination off
+#set pagination off
 #set print asm-demangle on
 set disassembly-flavor intel
 
 add-symbol-file ./build/kernelfull.o 0x100000
 
 
-break kernel.c:127
-break fs.c:66
+break kernel.c:187
+break idt.c:56
+break idt.c:44
+break *0x400000
 layout src
 target remote | qemu-system-i386 -hda ./bin/os.bin -S -gdb stdio --accel tcg

@@ -41,8 +41,14 @@
 #define PEACHOS_MAX_PROCESSES 12
 
 // Offset to the GDT of the table, see gdt_internal, although offset are relative
-// to the real table
+// to the real table.
 #define USER_DATA_SEGMENT 0x23
+
+// 0x1b : 0001 1011 - hence the segment selector for the user code segmnet holds
+// 11 for the selector value, which is the 4th entry in the GDT as defined in
+//    kernel.c
+// 0 for the TI bit, hence global descriptor table
+// 11 for the RPL: hence the lowest possible request privilege level
 #define USER_CODE_SEGMENT 0x1b
 
 #define PEACHOS_MAX_ISR80H_COMMANDS 1024

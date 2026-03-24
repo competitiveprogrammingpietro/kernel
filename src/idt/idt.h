@@ -1,6 +1,10 @@
 #ifndef IDT_H
 #define IDT_H
 #include <stdint.h>
+
+struct interrupt_frame;
+typedef void* (*ISR80H_COMMAND_HANDLER)(struct interrupt_frame* iframe);
+
 // https://wiki.osdev.org/Interrupt_Descriptor_Table
 struct idt_desc 
 {
@@ -39,6 +43,7 @@ struct interrupt_frame
 } __attribute__((packed));
 
 void idt_init();
-extern void enable_interrupts();
-extern void disable_interrupts();
+void enable_interrupts();
+void disable_interrupts();
+void isr80h_register_command(int cmd_id, ISR80H_COMMAND_HANDLER command);
 # endif

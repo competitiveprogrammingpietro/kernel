@@ -1,4 +1,5 @@
 #include "idt.h"
+#include "task/task.h"
 #include "config.h"
 #include "memory/memory.h"
 #include "kernel.h"
@@ -6,6 +7,8 @@
 
 struct idt_desc idt_descriptors[PEACOS_INTERRUPT_NUMBER];
 struct idtr_desc idtr_descriptor;
+
+static ISR80H_COMMAND_HANDLER isr80h_commands[PEACHOS_MAX_ISR80H_COMMANDS];
 
 extern void idt_load(void *);
 extern void int21h();
@@ -38,15 +41,40 @@ void idt_zero()
 	write_string("Divide by zero error");
 }
 
+void isr80h_register_command(int command_id, ISR80H_COMMAND_HANDLER command)
+{
+	if (command_id < 0 || command_id >= PEACHOS_MAX_ISR80H_COMMANDS)
+	{
+		panic("The command is out of bounds\n");
+	}
+
+	if (isr80h_commands[command_id])
+	{
+		panic("Your attempting to overwrite an existing command\n");
+	}
+
+	isr80h_commands[command_id] = command;
+
+	int i = 1;
+	command_id = i;
+}
+
 // This is the handler called by the assembly section concerning the 80H ISR
 void *int80_handler(int command, struct interrupt_frame *iframe)
 {
 	void *res = 0;
-	kernel_page();
-	task_current_save_state(iframe);
+	kernel_context();
+	task_save_state(task_current(), iframe);
 	// Handle the command
 
-	task_page();
+	if (!isr80h_commands[command])
+	{
+		panic("No handler registered for command\n");
+	}
+	res = isr80h_commands[command](iframe);
+
+	// Restore the task
+	task_context(task_current());
 	return res;
 }
 
@@ -65,7 +93,7 @@ void idt_init()
 
 	idt_set(0, idt_zero);
 	idt_set(0x21, int21_handler);
-
+	idt_set(0x80, int80_handler);
 	// Load the IDTR up
 	idt_load(&idtr_descriptor);
 }

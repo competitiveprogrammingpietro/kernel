@@ -3,7 +3,7 @@
 
 #include "config.h"
 #include "memory/paging/paging.h"
-
+#include "idt/idt.h"
 // This is the view of the task as far as the CPU is concerned. This file
 // is at the *core* of the whole OS
 struct registers
@@ -45,7 +45,8 @@ struct task *task_new(struct process *p);
 struct task *task_current();
 struct task *task_get_next();
 int task_free(struct task *task);
-
+void task_save_state(struct task *task, struct interrupt_frame *frame);
+int task_context(struct task *task);
 // Implemented in assembly
 void task_restore_general_purpose_registers(struct registers *registers);
 void task_jump_to(struct registers *registers);

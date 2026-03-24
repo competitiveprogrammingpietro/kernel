@@ -50,7 +50,7 @@ divide_by_zero_error:
 ; Set the segments to the kernel's data segment, that is the third entry of the
 ; GDT table, look at kernel.c
 kernel_set_segment_registers:
-    mov ax, 10
+    mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov gs, ax
