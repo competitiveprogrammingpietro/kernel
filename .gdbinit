@@ -10,10 +10,10 @@ set disassembly-flavor intel
 
 add-symbol-file ./build/kernelfull.o 0x100000
 
-
-break kernel.c:187
+break kernel.c:180
 break idt.c:56
-break idt.c:44
+break idt.c:66
+
 break *0x400000
-layout src
 target remote | qemu-system-i386 -hda ./bin/os.bin -S -gdb stdio --accel tcg
+layout split
