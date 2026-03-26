@@ -4,16 +4,19 @@ global divide_by_zero_error
 global kernel_set_segment_registers
 extern kernel_main
 
-CODE_SEG equ 0x8
+CODE_SEG equ 0x08
 DATA_SEG equ 0x10
 _start:
+
+	; CS is already ok as it is set by the bootloader however the othere segment
+	; registers need adjusting
 	mov ax, DATA_SEG
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-	mov ebp, 0x00200000
+	mov ebp, 0x00200000 ; We arbitrarily set the kernel's stack there
 	mov esp, ebp
 	
 	; Enable A20 line

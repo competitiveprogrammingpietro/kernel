@@ -62,7 +62,7 @@ step2:
 	or eax, 0x1
 	mov cr0, eax
 	
-	; This tells the CPU to use the index 1 from the GDT, hence the code	
+	; This implicitly sets the CS register to use the second entry from the GDT
 	jmp CODE_SEG:load32
 
 ; This is the Global Descriptor Table https://wiki.osdev.org/Global_Descriptor_Table

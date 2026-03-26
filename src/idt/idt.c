@@ -12,6 +12,7 @@ static ISR80H_COMMAND_HANDLER isr80h_commands[PEACHOS_MAX_ISR80H_COMMANDS];
 
 extern void idt_load(void *);
 extern void int21h();
+extern void int80h();
 extern void no_interrupt();
 
 void idt_set(int int_num, void *address)
@@ -54,9 +55,6 @@ void isr80h_register_command(int command_id, ISR80H_COMMAND_HANDLER command)
 	}
 
 	isr80h_commands[command_id] = command;
-
-	int i = 1;
-	command_id = i;
 }
 
 // This is the handler called by the assembly section concerning the 80H ISR
@@ -65,8 +63,8 @@ void *int80_handler(int command, struct interrupt_frame *iframe)
 	void *res = 0;
 	kernel_context();
 	task_save_state(task_current(), iframe);
-	// Handle the command
 
+	// Handle the command
 	if (!isr80h_commands[command])
 	{
 		panic("No handler registered for command\n");
@@ -93,7 +91,7 @@ void idt_init()
 
 	idt_set(0, idt_zero);
 	idt_set(0x21, int21_handler);
-	idt_set(0x80, int80_handler);
+	idt_set(0x80, int80h);
 	// Load the IDTR up
 	idt_load(&idtr_descriptor);
 }

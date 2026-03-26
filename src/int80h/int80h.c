@@ -1,9 +1,8 @@
 #include "int80h.h"
 
-
-void* int80h_sum(struct interrupt_frame* iframe)
+void *int80h_sum(struct interrupt_frame *iframe)
 {
-    return 0;
+    return (void*)1;
 }
 
 void int80h_register_commands()

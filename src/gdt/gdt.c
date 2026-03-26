@@ -5,17 +5,15 @@
 // up a GDT entry x86 as described https://wiki.osdev.org/Global_Descriptor_Table#Segment_Descriptor
 void gdt_internal_entry_to_gdt_entry(uint8_t *target, struct gdt_internal source)
 {
-    // This is the last part of the limit and it has been explaied at all by
-    // the lecturer ..... !
-    // Guesswork: limit is a 20 bits splits in two pieces, 16 and 4, if our
-    // internal structure holds a number greater than what 16 bits would fit
-    // into, we need to use the remaining 4 bits addressed by target[6]
-    // 16 bits = 65535 ..... would not you write source.limit & 0xffff0000 != 0 ?
-    target[6] = 0x40;
+
+    // Our internal representation uses 32 bits for the limit, while the GDT
+    // scatters it in 16 bits, target[0/1] and the least significant four bits
+    // of target[0]. We always fall into this case
+    target[6] = 0x40; // FLAGS: 0100 GDLR D = 1 32 bits selectors
     if (source.limit > 65535)
     {
         source.limit = source.limit >> 12;
-        target[6] = 0xC0;
+        target[6] = 0xC0; // FLAGS 1100 G = 1 as well.  Page granularity means that the limit is expressed in form of 4K blocks
     }
 
     // Encodes the limit

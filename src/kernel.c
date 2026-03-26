@@ -177,6 +177,7 @@ void kernel_main()
 
   disk_init();
 
+  int80h_register_commands();
   // Initialise the kernel page directory and load it up
   kernel_page_directory = paging_page_directory_new(PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
 
@@ -184,7 +185,6 @@ void kernel_main()
 
   paging_enable();
 
-  int80h_register_commands();
   struct process *process;
   int res = process_load_executable("0:/blank.bin", &process);
   if (res != PEACHOS_OK)
