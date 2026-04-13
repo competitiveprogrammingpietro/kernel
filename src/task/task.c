@@ -5,6 +5,7 @@
 #include "memory/memory.h"
 #include "memory/paging/paging.h"
 #include "idt/idt.h"
+#include "string/string.h"
 
 // The current task that is running
 static struct task *current_task = 0;
@@ -149,4 +150,74 @@ void task_save_state(struct task *task, struct interrupt_frame *frame)
     task->registers.edi = frame->edi;
     task->registers.edx = frame->edx;
     task->registers.esi = frame->esi;
+}
+
+// UNTESTED. Copy n bytes from base address virt - within task's address space -
+// into the physical addres, kernel address, phys.
+int copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n)
+{
+    if (n >= PAGING_PAGE_SIZE)
+    {
+        return -EINVARGS;
+    }
+
+    char *buffer = kzalloc(n);
+    if (!buffer)
+    {
+        return -ENOMEM;
+    }
+
+    // Get the page entry for the kernel space address of buffer - the task initial
+    // mapping directory maps the entire 4GB space to itself, but that can change
+    // since the kernel might relocate that to the address where the executable
+    // was loaded, hence we save such page table entry here.
+    uint32_t task_page_entry_for_buffer_address = paging_get_page_from_address(
+        t->page_directory->entry,
+        buffer);
+
+    // Map the process page table entry for virtual address buffer to its physical
+    // address
+    int res = paging_map_single_page(
+        t->page_directory,
+        buffer,
+        (uint32_t)buffer,
+        PAGING_IS_WRITEABLE | PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL);
+
+    if (res)
+    {
+        kfree(buffer);
+        return res;
+    }
+
+    // Now the kernel and the task share some memory, that is, the virtual
+    // address of buffer points to the physical address of buffer. The kernel
+    // isn't relocated so it does not matter that much, hence we save the
+    // kernel directory, switch to the task's directory and copy the content
+    // of virt into buffer
+    struct paging_page_directory kernel_directory =
+        paging_get_current_directory();
+    paging_page_directory_switch(t->page_directory);
+    strncpy(buffer, virt, n);
+
+    // Now the job is done, we can revert to the kernel directory, restore the
+    // task's page entry and free the buffer, whose solely purpose was to share
+    // memory among the process and the kernel.
+    paging_page_directory_switch(&kernel_directory);
+
+    res = paging_map_single_page(
+        t->page_directory,
+        buffer,
+        task_page_entry_for_buffer_address,
+        task_page_entry_for_buffer_address & 0xfffff000 // Same flags
+    );
+
+    if (res)
+    {
+        kfree(buffer);
+        return res;
+    }
+
+    strncpy(phys, buffer, n);
+    kfree(buffer);
+    return 0;
 }

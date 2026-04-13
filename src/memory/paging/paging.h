@@ -41,4 +41,6 @@ int paging_map_directory(
     void *phys_end,
     int flags);
 void *paging_align_address(void *ptr);
+uint32_t paging_get_page_from_address(uint32_t *page_directory, void *virt);
+struct paging_page_directory paging_get_current_directory();
 #endif

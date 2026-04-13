@@ -7,6 +7,11 @@ void paging_load_directory(uint32_t *directory);
 
 static struct paging_page_directory *current_directory = 0;
 
+struct paging_page_directory paging_get_current_directory()
+{
+	return *current_directory; // this is a copy of.
+}
+
 /*
  * Initialise a page directory which addresses 4GB of memory, the page table
  * entries are set to the identity function, that is, addesses 0x123456 gets
@@ -83,7 +88,7 @@ int paging_map_single_page(
 
 	// While table index are bits between 21:12, the the first 10 out of the way
 	// and discard the last 12
-	table_idx = (((uint32_t)virtual) & 0x0003ffff) >> 12;
+	table_idx = (((uint32_t)virtual) & 0x003fffff) >> 12;
 
 	uint32_t dentry = directory->entry[directory_idx];
 
@@ -160,4 +165,25 @@ void *paging_align_address(void *ptr)
 
 	uint32_t address = (uint32_t)ptr;
 	return (void *)(address + PAGING_PAGE_SIZE - (address % PAGING_PAGE_SIZE));
+}
+
+// Given a virtual address and page directory base address returns the page
+// table entry for it as it is, flags included
+uint32_t paging_get_page_from_address(uint32_t *page_directory, void *virt)
+{
+	uint32_t page_directory_entry = 0;
+	uint32_t page_table_entry = 0;
+
+	if (!PAGE_IS_ALIGNED(virt))
+	{
+		return -EINVARGS;
+	}
+
+	page_directory_entry = ((uint32_t)virt) >> 22;
+	page_table_entry = ((uint32_t)virt & 0x003fffff) >> 12;
+
+	uint32_t *page_table = (uint32_t *)page_directory[page_directory_entry];
+
+	// This returns it with the page flags
+	return page_table[page_table_entry];
 }
