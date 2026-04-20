@@ -36,4 +36,5 @@ int process_load_executable(
     const char *filename,
     struct process **rprocess);
 struct process *process_current();
+int process_set_current(struct process* process);
 #endif

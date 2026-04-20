@@ -1,6 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-#define PEACOS_INTERRUPT_NUMBER 512
+#define PEACHOS_INTERRUPT_NUMBER 512
 
 // I don't get those yet
 #define KERNEL_CODE_SELECTOR 0x08

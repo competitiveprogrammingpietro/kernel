@@ -5,15 +5,23 @@
 #include "kernel.h"
 #include "io/io.h"
 
-struct idt_desc idt_descriptors[PEACOS_INTERRUPT_NUMBER];
+struct idt_desc idt_descriptors[PEACHOS_INTERRUPT_NUMBER];
 struct idtr_desc idtr_descriptor;
 
 static ISR80H_COMMAND_HANDLER isr80h_commands[PEACHOS_MAX_ISR80H_COMMANDS];
 
+extern void *asm_interrupt_pointer_table[PEACHOS_INTERRUPT_NUMBER];
 extern void idt_load(void *);
-extern void int21h();
 extern void int80h();
 extern void no_interrupt();
+
+// This is the main interrupt handler for our system
+void idt_interrupt_handler(int interrupt, struct interrupt_frame *frame)
+{
+
+	// Just ack it for now
+	outb(0x20, 0x20);
+}
 
 void idt_set(int int_num, void *address)
 {
@@ -84,14 +92,14 @@ void idt_init()
 
 	// If by the time this code runs an interrupt is raised
 	// the CPU will reset
-	for (int i = 0; i < PEACOS_INTERRUPT_NUMBER; i++)
+	for (int i = 0; i < PEACHOS_INTERRUPT_NUMBER; i++)
 	{
-		idt_set(i, no_interrupt);
+		idt_set(i, asm_interrupt_pointer_table[i]);
 	}
 
 	idt_set(0, idt_zero);
-	idt_set(0x21, int21_handler);
 	idt_set(0x80, int80h);
+
 	// Load the IDTR up
 	idt_load(&idtr_descriptor);
 }

@@ -15,6 +15,12 @@ static uint32_t processes_next_free_index = 0;
 
 static struct process *processes[PEACHOS_MAX_PROCESSES] = {};
 
+int process_set_current(struct process *process)
+{
+    current_process = process;
+    return 0;
+}
+
 struct process *process_current()
 {
     return current_process;

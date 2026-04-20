@@ -191,6 +191,9 @@ void kernel_main()
   {
     panic("Failed to load process");
   }
+
+  process_set_current(process);
+
   task_run_head();
   /*
   enable_interrupts();
