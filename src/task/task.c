@@ -156,6 +156,8 @@ void task_save_state(struct task *task, struct interrupt_frame *frame)
 // into the physical addres, kernel address, phys.
 int task_copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n)
 {
+    // If we are to copy more then PAGING_PAGE_SIZE the algorithm would need
+    // to be changed, it'd get more complex
     if (n >= PAGING_PAGE_SIZE)
     {
         return -EINVARGS;
@@ -207,8 +209,8 @@ int task_copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n)
     res = paging_map_single_page(
         t->page_directory,
         buffer,
-        task_page_entry_for_buffer_address,
-        task_page_entry_for_buffer_address & 0xfffff000 // Same flags
+        task_page_entry_for_buffer_address & 0xfffff000, // Flags omitted
+        task_page_entry_for_buffer_address & 0x00000fff  // Same flags
     );
 
     if (res)
@@ -217,6 +219,8 @@ int task_copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n)
         return res;
     }
 
+    // Now copy the data in the actual desired destination, and free the temporary
+    // buffer created to share memory
     strncpy(phys, buffer, n);
     kfree(buffer);
     return 0;

@@ -108,6 +108,8 @@ int process_load_executable(
 
     // Map the loaded exec in virtual addresses, round it up to the nearest page
     // aligned size so we don't fail during the mapping
+    // The first 1MB is reserved, the next 3MB are taken by the kernel, the process
+    // is then loaded at 0x400000 virtual.
     r = paging_map_directory(
         process->task->page_directory,
         (void *)PEACHOS_PROGRAM_VIRTUAL_ADDRESS,
@@ -136,7 +138,6 @@ int process_load_executable(
         task_free(task);
         return r;
     }
-
     *rprocess = process;
 
     // Add the process to the array

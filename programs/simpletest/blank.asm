@@ -6,9 +6,11 @@ section .asm
 global _start
 
 _start:
-    push 10h
-    push 10h
-    mov eax, 0
+    push message
+    mov eax, 1
     int 0x80
-    add esp, 8 ; restore stack, shortend for push eax, push eax
+    add esp, 4 ; restore stack, shortend for push eax, push eax
     jmp $
+
+section .data:
+message: db 'Kiss you babe', 0
