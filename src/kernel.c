@@ -16,6 +16,7 @@
 #include "config.h"
 #include "status.h"
 #include "int80h/int80h.h"
+#include "keyboard/keyboard.h"
 #include <stdint.h>
 
 #define COLOR_TERMINAL(c, col) ((col << 8) | c)
@@ -193,6 +194,8 @@ void kernel_main()
   }
 
   process_set_current(process);
+
+  keyboard_push('A');
 
   task_run_head();
   /*

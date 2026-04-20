@@ -1,16 +1,12 @@
 #include "keyboard.h"
 #include "task/process.h"
 #include "status.h"
+#include "keyboard_classic.h"
 
 // We might have to deal with different kinds of keyboard whose layout
 // changes at runtime, hence we have a list of keyboards.
 static struct keyboard *keyboard_list_head = 0;
 static struct keyboard *keyboard_list_tail = 0;
-
-void keyboard_init()
-{
-    // Nothing to be done for this kayboard driver
-}
 
 int keyboard_insert(struct keyboard *keyboard)
 {
@@ -72,4 +68,10 @@ char keyboard_pop()
     process->keyboard_buffer.head =
         (process->keyboard_buffer.head + 1) % PEACHOS_KEYBOARD_BUFFER_SIZE;
     return c;
+}
+
+void keyboard_init()
+{
+    // Insert the classic keyboard
+    keyboard_insert(keyboard_classic());
 }
