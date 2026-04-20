@@ -24,9 +24,16 @@ struct process
 
     // The physical pointer to the stack memory
     void *stack;
+
+    struct keyboard_buffer
+    {
+        char buffer[PEACHOS_KEYBOARD_BUFFER_SIZE]; // circular buffer
+        int head, tail;
+    } keyboard_buffer;
 };
 
 int process_load_executable(
     const char *filename,
     struct process **rprocess);
+struct process *process_current();
 #endif

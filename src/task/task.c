@@ -152,7 +152,7 @@ void task_save_state(struct task *task, struct interrupt_frame *frame)
     task->registers.esi = frame->esi;
 }
 
-// UNTESTED. Copy n bytes from base address virt - within task's address space -
+// Copy n bytes from base address virt - within task's address space -
 // into the physical addres, kernel address, phys.
 int task_copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n)
 {
