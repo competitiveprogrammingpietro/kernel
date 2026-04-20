@@ -52,5 +52,6 @@ void task_restore_general_purpose_registers(struct registers *registers);
 void task_jump_to(struct registers *registers);
 void task_user_segments();
 void task_run_head();
-int copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n);
+int task_copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n);
+void *task_stack_item(struct task *task, int index);
 #endif

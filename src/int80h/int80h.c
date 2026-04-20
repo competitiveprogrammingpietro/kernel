@@ -1,8 +1,11 @@
 #include "int80h.h"
+#include "task/task.h"
 
 void *int80h_sum(struct interrupt_frame *iframe)
 {
-    return (void*)1;
+    int one = (int)task_stack_item(task_current(), 1);
+    int two = (int)task_stack_item(task_current(), 0);
+    return (void *)one + two;
 }
 
 void int80h_register_commands()

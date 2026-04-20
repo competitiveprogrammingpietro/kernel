@@ -154,7 +154,7 @@ void task_save_state(struct task *task, struct interrupt_frame *frame)
 
 // UNTESTED. Copy n bytes from base address virt - within task's address space -
 // into the physical addres, kernel address, phys.
-int copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n)
+int task_copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n)
 {
     if (n >= PAGING_PAGE_SIZE)
     {
@@ -220,4 +220,18 @@ int copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n)
     strncpy(phys, buffer, n);
     kfree(buffer);
     return 0;
+}
+
+// Retrieve an item on the task's stack by switching to its context, getting
+// the item at the provided index and returning it. The entry context it is
+// the kernel context and it is restored before exiting.
+void *task_stack_item(struct task *task, int index)
+{
+    void *result;
+
+    uint32_t *sp = (uint32_t *)task->registers.esp;
+    task_context(task);
+    result = (void *)sp[index];
+    kernel_context();
+    return result;
 }

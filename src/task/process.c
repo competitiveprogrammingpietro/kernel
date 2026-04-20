@@ -122,6 +122,21 @@ int process_load_executable(
         return r;
     }
 
+    // Map the stack addresses for the process - in read only for now. As the
+    // stack grows upwards the end address is given first.
+    r = paging_map_directory(
+        process->task->page_directory,
+        (void *)PEACHOS_PROGRAM_VIRTUAL_STACK_ADDRESS_END,
+        process->stack,
+        paging_align_address(process->stack + PEACHOS_USER_PROGRAM_STACK_SIZE),
+        PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL | PAGING_IS_WRITEABLE);
+
+    if (r < 0)
+    {
+        task_free(task);
+        return r;
+    }
+
     *rprocess = process;
 
     // Add the process to the array
