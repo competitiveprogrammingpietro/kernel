@@ -137,6 +137,11 @@ void kernel_context()
   paging_page_directory_switch(kernel_page_directory);
 }
 
+void timer_callback(struct interrupt_frame *frame)
+{
+  print("Timer");
+}
+
 void kernel_main()
 {
 
@@ -186,6 +191,7 @@ void kernel_main()
 
   paging_enable();
 
+  idt_register_interrupt(0x20, timer_callback);
   struct process *process;
   int res = process_load_executable("0:/blank.bin", &process);
   if (res != PEACHOS_OK)
@@ -195,9 +201,11 @@ void kernel_main()
 
   process_set_current(process);
 
+  keyboard_init();
   keyboard_push('A');
 
   task_run_head();
+
   /*
   enable_interrupts();
 

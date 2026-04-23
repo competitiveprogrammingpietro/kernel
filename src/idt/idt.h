@@ -3,22 +3,27 @@
 #include <stdint.h>
 
 struct interrupt_frame;
-typedef void* (*ISR80H_COMMAND_HANDLER)(struct interrupt_frame* iframe);
+
+// This is used to register a new kernel command
+typedef void *(*ISR80H_COMMAND_HANDLER)(struct interrupt_frame *iframe);
+
+// This is used to register a new interrupt handler
+typedef void (*INTERRUPT_HANDLER)(struct interrupt_frame *frame);
 
 // https://wiki.osdev.org/Interrupt_Descriptor_Table
-struct idt_desc 
+struct idt_desc
 {
-	uint16_t offset_1;
-	uint16_t selector;
-	uint8_t zero;
-	uint8_t type_attr;
-	uint16_t offset_2;
+    uint16_t offset_1;
+    uint16_t selector;
+    uint8_t zero;
+    uint8_t type_attr;
+    uint16_t offset_2;
 } __attribute__((packed));
 
-struct idtr_desc 
+struct idtr_desc
 {
-	uint16_t limit;
-	uint32_t base;
+    uint16_t limit;
+    uint32_t base;
 } __attribute__((packed));
 
 // This struct differs slightly from the task's register one - the real difference
@@ -46,4 +51,6 @@ void idt_init();
 void enable_interrupts();
 void disable_interrupts();
 void isr80h_register_command(int cmd_id, ISR80H_COMMAND_HANDLER command);
-# endif
+int idt_register_interrupt(int interrupt,
+                           INTERRUPT_HANDLER interrupt_callback);
+#endif

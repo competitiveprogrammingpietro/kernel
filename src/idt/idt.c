@@ -1,16 +1,22 @@
 #include "idt.h"
 #include "task/task.h"
 #include "config.h"
+#include "status.h"
 #include "memory/memory.h"
 #include "kernel.h"
 #include "io/io.h"
+
+// Those handlers are defined in assembly using a NASM macro, all they do
+// is to call the idt_interrupt_handler() feeding to it the interrupt
+// number
+extern void *asm_interrupt_pointer_table[PEACHOS_INTERRUPT_NUMBER];
 
 struct idt_desc idt_descriptors[PEACHOS_INTERRUPT_NUMBER];
 struct idtr_desc idtr_descriptor;
 
 static ISR80H_COMMAND_HANDLER isr80h_commands[PEACHOS_MAX_ISR80H_COMMANDS];
+static INTERRUPT_HANDLER idt_interrupt_handlers[PEACHOS_INTERRUPT_NUMBER];
 
-extern void *asm_interrupt_pointer_table[PEACHOS_INTERRUPT_NUMBER];
 extern void idt_load(void *);
 extern void int80h();
 extern void no_interrupt();
@@ -18,8 +24,15 @@ extern void no_interrupt();
 // This is the main interrupt handler for our system
 void idt_interrupt_handler(int interrupt, struct interrupt_frame *frame)
 {
-
-	// Just ack it for now
+	void *ptr = idt_interrupt_handlers[interrupt];
+	ptr = ptr;
+	kernel_context();
+	if (idt_interrupt_handlers[interrupt] != 0)
+	{
+		task_save_state(task_current(), frame);
+		idt_interrupt_handlers[interrupt](frame);
+	}
+	task_context(task_current());
 	outb(0x20, 0x20);
 }
 
@@ -36,12 +49,6 @@ void idt_set(int int_num, void *address)
 void no_interrupt_handler()
 {
 	//	write_string("No interrupt handler defined\n");
-	outb(0x20, 0x20);
-}
-
-void int21_handler()
-{
-	write_string("Keyboard interrupt\n");
 	outb(0x20, 0x20);
 }
 
@@ -84,6 +91,18 @@ void *int80_handler(int command, struct interrupt_frame *iframe)
 	return res;
 }
 
+int idt_register_interrupt(int interrupt,
+						   INTERRUPT_HANDLER interrupt_callback)
+{
+	if (interrupt < 0 || interrupt >= PEACHOS_INTERRUPT_NUMBER)
+	{
+		return -EINVARGS;
+	}
+
+	idt_interrupt_handlers[interrupt] = interrupt_callback;
+	return 0;
+}
+
 void idt_init()
 {
 	memset(idt_descriptors, 0, sizeof(idt_descriptors));
@@ -94,9 +113,12 @@ void idt_init()
 	// the CPU will reset
 	for (int i = 0; i < PEACHOS_INTERRUPT_NUMBER; i++)
 	{
+
+		// All interrupts point to their 'numbered' handler defined in asm
 		idt_set(i, asm_interrupt_pointer_table[i]);
 	}
 
+	// Mumble mumble. Should not they use the register_interrupt_handler
 	idt_set(0, idt_zero);
 	idt_set(0x80, int80h);
 

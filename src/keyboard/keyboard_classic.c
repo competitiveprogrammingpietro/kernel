@@ -1,6 +1,9 @@
 #include "keyboard_classic.h"
 #include "keyboard.h"
 #include "io/io.h"
+#include "idt/idt.h"
+#include "kernel.h"
+#include "task/task.h"
 #include <stdint.h>
 #include <stddef.h>
 
@@ -23,12 +26,6 @@ static uint8_t keyboard_classic_scan_set_one[] = {
     '6', '+', '1', '2', '3', '0', '.'};
 
 
-int keyboard_classic_init()
-{
-    outb(PS2_PORT, PS2_COMMAND_ENABLE_FIRST_PORT);
-    return 0;
-}
-
 uint8_t classic_keyboard_scancode_to_char(uint8_t scancode)
 {
 
@@ -40,10 +37,36 @@ uint8_t classic_keyboard_scancode_to_char(uint8_t scancode)
     return keyboard_classic_scan_set_one[scancode];
 }
 
-void clasic_keyboard_handle_interrupt()
+void keyboard_classic_handle_interrupt()
 {
+    kernel_context();
+    uint8_t scancode = 0;
+    scancode = insb(KEYBOARD_CLASSIC_INPUT_PORT);
+
+    // discarded as we do not handle extended keys
+    insb(KEYBOARD_CLASSIC_INPUT_PORT);
+
+    // We only care about pressed keys
+    if (scancode & KEYBOARD_CLASSIC_KEY_RELEASED)
+    {
+        return;
+    }
+
+    uint8_t c = classic_keyboard_scancode_to_char(scancode);
+    if (c != 0)
+    {
+        keyboard_push(c);
+    }
+    task_context(task_current());
 }
 
+int keyboard_classic_init()
+{
+    idt_register_interrupt(KEYBOARD_CLASSIC_ISR_KEYBOARD_INTERRUPT,
+                           keyboard_classic_handle_interrupt);
+    outb(PS2_PORT, PS2_COMMAND_ENABLE_FIRST_PORT);
+    return 0;
+}
 struct keyboard classic_keyboard = {
     .name = "keyboard_classic",
     .init = keyboard_classic_init};
