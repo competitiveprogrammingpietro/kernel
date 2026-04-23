@@ -18,6 +18,7 @@
 #include "int80h/int80h.h"
 #include "keyboard/keyboard.h"
 #include <stdint.h>
+#include "kernel.h"
 
 #define COLOR_TERMINAL(c, col) ((col << 8) | c)
 extern void divide_by_zero_error();
@@ -51,6 +52,27 @@ void write_char(char c)
   {
     current_col = 0;
     current_row = (current_row + 1) % VGA_ROWS;
+    return;
+  }
+
+  // Backspace
+  if (c == 0x08)
+  {
+    if (current_col == 0 && current_row == 0)
+    {
+      return; // Can't do anything we're already at the beginning
+    }
+
+    // Handle it
+    if (current_col == 0)
+    {
+      current_row = -1;
+      current_col = VGA_COLS - 1;
+    }
+
+    current_col = current_col - 1;
+    video_memory[current_row * VGA_COLS + current_col] = COLOR_TERMINAL(' ', 15);
+    current_col = current_col - 1;
     return;
   }
 
@@ -145,6 +167,7 @@ void timer_callback(struct interrupt_frame *frame)
 void kernel_main()
 {
 
+  // Frame buffer, ASCII mode each cell is two bytes: ASCII char and color
   video_memory = (uint16_t *)0xB8000;
 
   // Blank out the screen
@@ -191,7 +214,7 @@ void kernel_main()
 
   paging_enable();
 
-  idt_register_interrupt(0x20, timer_callback);
+  // idt_register_interrupt(0x20, timer_callback);
   struct process *process;
   int res = process_load_executable("0:/blank.bin", &process);
   if (res != PEACHOS_OK)
@@ -202,7 +225,6 @@ void kernel_main()
   process_set_current(process);
 
   keyboard_init();
-  keyboard_push('A');
 
   task_run_head();
 
