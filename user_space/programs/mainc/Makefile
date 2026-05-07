@@ -1,6 +1,7 @@
 .PHONY: all
 STDLIB=../../stdlib/stdlib.elf
 INCLUDES=-I../../stdlib/src
+FLAGS=-O0 -g
 all: build/mainc.elf
 
 build/mainc.elf: build/mainc.o

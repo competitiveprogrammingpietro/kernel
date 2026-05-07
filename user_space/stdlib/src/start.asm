@@ -1,5 +1,5 @@
 [BITS 32]
-
+; This is the real entry point for an user program.
 global _start
 extern main
 

@@ -8,6 +8,8 @@ enum SYSTEM_COMMAND
     SYSTEM_COMMAND_PRINT,
     SYSTEM_COMMAND_GETKEY,
     SYSTEM_COMMAND_PUTKEY,
+    SYSTEM_COMMAND_MALLOC,
+    SYSTEM_COMMAND_FREE,
 };
 
 void *int80h_sum(struct interrupt_frame *iframe);

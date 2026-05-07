@@ -9,8 +9,10 @@
 set disassembly-flavor intel
 
 add-symbol-file ./build/kernelfull.o 0x100000
+add-symbol-file ./user_space/programs/mainc/build/mainc.elf 0x400000
 
 break elf_loader.c:44
 break *0x400000
+break main
 target remote | qemu-system-i386 -hda ./bin/os.bin -S -gdb stdio --accel tcg
 layout split

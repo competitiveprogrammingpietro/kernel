@@ -130,6 +130,11 @@ int process_load_executable(
     strncpy(process->filename, filename, sizeof(process->filename));
     process->stack = process_stack;
     process->id = process_id;
+    process->allocation_index = 0;
+    for (int i = 0; i < PEACHOS_MAX_PROGRAM_ALLOCATIONS; i++)
+    {
+        process->allocations[i] = 0x00;
+    }
 
     // Create a task
     task = task_new(process);
@@ -164,7 +169,6 @@ int process_load_executable(
         }
     }
 
-    //
     if (process->process_file_type == PROCESS_FILE_TYPE_ELF)
     {
 
@@ -175,9 +179,9 @@ int process_load_executable(
 
         for (int i = 0; i < eh->e_phnum; i++)
         {
-            struct elf32_phdr *phdr = 
-                            process->elf_file->elf_memory +
-                            (eh->e_phoff + sizeof(struct elf32_phdr) * i);
+            struct elf32_phdr *phdr =
+                process->elf_file->elf_memory +
+                (eh->e_phoff + sizeof(struct elf32_phdr) * i);
 
             int flags = PAGING_IS_PRESENT | PAGING_ACCESS_FROM_ALL;
             if (phdr->p_flags & PF_W)
@@ -188,10 +192,13 @@ int process_load_executable(
             // Map the ELF segment
             r = paging_map_directory(
                 process->task->page_directory,
-                paging_align_address_previous((void*)phdr->p_vaddr),
+                paging_align_address_previous((void *)phdr->p_vaddr),
                 process->elf_file->elf_memory + phdr->p_offset, // PHYSICAL ADDRESS START
+
+                // p_filesz: a static variable has zero size, but the p_memsz
+                // is the size in memory
                 paging_align_address_next(
-                    process->elf_file->elf_memory + phdr->p_offset + phdr->p_filesz), // END ADDRESS
+                    process->elf_file->elf_memory + phdr->p_offset + phdr->p_memsz), // END ADDRESS
                 flags);
 
             if (r < 0)
@@ -222,4 +229,58 @@ int process_load_executable(
     // Add the process to the array
     processes[process_id] = process;
     return 0;
+}
+
+void *process_malloc(struct process *process, size_t size)
+{
+    void *ptr = kzalloc(size);
+    if (!ptr)
+    {
+        return ERROR(-ENOMEM);
+    }
+
+    // Rudimentary, get the first empty spot
+    if (process->allocation_index == PEACHOS_MAX_PROGRAM_ALLOCATIONS)
+    {
+        process->allocation_index = 0;
+    }
+
+    int i = process->allocation_index;
+    for (; i < PEACHOS_MAX_PROGRAM_ALLOCATIONS; i++)
+    {
+        if (process->allocations[i] == 0x00)
+            break;
+    }
+
+    if (i == PEACHOS_MAX_PROGRAM_ALLOCATIONS)
+    {
+        return ERROR(-ENOMEM);
+    }
+    process->allocations[i] = ptr;
+    process->allocation_index = i + 1;
+    return ptr;
+}
+
+void process_free(struct process* process, void* ptr)
+{
+
+    // We cannot allow the process to free someone else's memory
+    int found = 0;
+    for (int i = 0; i < PEACHOS_MAX_PROGRAM_ALLOCATIONS; i++)
+    {
+        if (process->allocations[i] != ptr)
+            continue;
+
+        process->allocations[i] = 0x00;
+        found = 1;
+        break;
+    }
+
+    if (!found)
+    {
+        return;
+    }
+
+    // We can now free the kernel space memory
+    kfree(ptr);
 }

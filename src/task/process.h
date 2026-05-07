@@ -22,6 +22,8 @@ struct process
     // The memory (malloc) allocations of the process
     void *allocations[PEACHOS_MAX_PROGRAM_ALLOCATIONS];
 
+    int allocation_index;
+
     int process_file_type;
 
     // The physical pointer to the start of the process memory and its size, the
@@ -49,4 +51,6 @@ int process_load_executable(
     struct process **rprocess);
 struct process *process_current();
 int process_set_current(struct process *process);
+void *process_malloc(struct process *process, size_t size);
+void process_free(struct process *process, void *ptr);
 #endif

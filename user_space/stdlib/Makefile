@@ -1,5 +1,5 @@
 all: stdlib.elf
-
+FLAGS=-g
 stdlib.elf: ./build/start.asm.o build/runtime.asm.o
 	i686-elf-ld -elf_i386 -relocatable $^ -o $@
 
