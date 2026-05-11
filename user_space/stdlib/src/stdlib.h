@@ -6,4 +6,5 @@ void print(const char *str);
 int getkey();
 void *malloc(size_t size);
 void free(void *ptr);
+char *atoi(int n);
 #endif

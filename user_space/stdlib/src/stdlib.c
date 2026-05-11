@@ -24,3 +24,33 @@ void free(void *ptr)
 {
     asm_free(ptr);
 }
+
+// This first implemenation returns a ptr not to be shared or written on, the
+// real use case we're addressing is the printing of a number, that is that.
+char *atoi(int n)
+{
+    static char text[12]; // 32 bits are 9 digits numbers, plus sign and NULL makes 12
+
+    int index = 11;
+    text[11] = 0;
+
+    char neg = 1;
+    if (n >= 0)
+    {
+        neg = 0;
+    }
+
+    while (n)
+    {
+        text[--index] = '0' + (n % 10);
+        n /= 10;
+    }
+
+    if (index == 11)
+        text[--index] = '0';
+
+    if (neg)
+        text[--index] = '-';
+
+    return &text[index];
+}
