@@ -1,6 +1,6 @@
 all: stdlib.elf
 FLAGS=-g
-stdlib.elf: ./build/start.asm.o build/runtime.asm.o
+stdlib.elf: ./build/start.asm.o build/runtime.asm.o build/stdlib.o
 	i686-elf-ld -elf_i386 -relocatable $^ -o $@
 
 build/%.o: src/%.c

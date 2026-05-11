@@ -1,11 +1,11 @@
 [BITS 32]
 
-global print:function
-global getkey:function
-global malloc:function
-global free:function
+global asm_print:function
+global asm_getkey:function
+global asm_malloc:function
+global asm_free:function
 
-print:
+asm_print:
     push ebp
     mov ebp, esp
     push dword[ebp+8] ; Our push plus the return address
@@ -15,7 +15,7 @@ print:
     pop ebp
     ret
 
-getkey:
+asm_getkey:
     push ebp
     mov ebp, esp
     mov eax, 2 ; Kernel command get_key()
@@ -23,7 +23,7 @@ getkey:
     pop ebp
     ret
 
-malloc:
+asm_malloc:
     push ebp
     mov ebp, esp
     mov eax, 4 ; Kernel command malloc
@@ -33,7 +33,7 @@ malloc:
     pop ebp
     ret
 
-free:
+asm_free:
     push ebp
     mov ebp, esp
     mov eax, 5 ; Command 5 free (Frees the allocated memory for this process)
