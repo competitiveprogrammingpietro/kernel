@@ -1,9 +1,11 @@
 #include "stdlib.h"
+#include <stdarg.h>
 
 extern void asm_print();
 extern int asm_getkey();
 extern void *asm_malloc();
 extern void asm_free();
+extern void asm_putchar(int c);
 
 void print(const char *str)
 {
@@ -15,6 +17,12 @@ int getkey()
     return asm_getkey();
 }
 
+int putchar(int c)
+{
+    asm_putchar(c);
+    return 0;
+}
+
 void *malloc(size_t size)
 {
     return asm_malloc(size);
@@ -23,6 +31,45 @@ void *malloc(size_t size)
 void free(void *ptr)
 {
     asm_free(ptr);
+}
+
+// This printf implementantion allows only for two types of data:
+// 1. Strings
+// 2. Integers
+int printf(const char *fmt, ...)
+{
+    va_list ap;
+    const char *p;
+    char *sval;
+    int ival;
+
+    va_start(ap, fmt);
+    for (p = fmt; *p; p++)
+    {
+        if (*p != '%')
+        {
+            putchar(*p);
+            continue;
+        }
+
+        switch (*++p)
+        {
+        case 'i':
+            ival = va_arg(ap, int);
+            print(atoi(ival));
+            break;
+
+        case 's':
+            sval = va_arg(ap, char *);
+            print(sval);
+            break;
+
+        default:
+            return -1; // Not allowed
+        }
+    }
+    va_end(ap);
+    return 0;
 }
 
 // This first implemenation returns a ptr not to be shared or written on, the

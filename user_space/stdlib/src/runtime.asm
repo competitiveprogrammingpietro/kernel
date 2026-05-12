@@ -4,6 +4,7 @@ global asm_print:function
 global asm_getkey:function
 global asm_malloc:function
 global asm_free:function
+global asm_putchar:function
 
 asm_print:
     push ebp
@@ -38,6 +39,17 @@ asm_free:
     mov ebp, esp
     mov eax, 5 ; Command 5 free (Frees the allocated memory for this process)
     push dword[ebp+8] ; Variable "ptr"
+    int 0x80
+    add esp, 4
+    pop ebp
+    ret
+
+
+asm_putchar:
+    push ebp
+    mov ebp, esp
+    mov eax, 3 ; Command putchar
+    push dword [ebp+8]
     int 0x80
     add esp, 4
     pop ebp

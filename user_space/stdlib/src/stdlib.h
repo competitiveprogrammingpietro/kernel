@@ -7,4 +7,6 @@ int getkey();
 void *malloc(size_t size);
 void free(void *ptr);
 char *atoi(int n);
+int putchar(int c);
+int printf(const char *fmt, ...);
 #endif
