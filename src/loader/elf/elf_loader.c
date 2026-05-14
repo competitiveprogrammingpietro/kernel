@@ -72,7 +72,7 @@ int elf_load_file(const char *path, struct elf_file **file_out)
     int res = fopen(path, "r");
     if (res <= 0)
     {
-        return res;
+        return -EINVARGS;
     }
 
     fd = res;
@@ -81,7 +81,7 @@ int elf_load_file(const char *path, struct elf_file **file_out)
     if (res != 0)
     {
         fclose(fd);
-        return res;
+        return -EIO;
     }
 
     // Read the whole file into memory
@@ -90,7 +90,7 @@ int elf_load_file(const char *path, struct elf_file **file_out)
     if (res < 0)
     {
         fclose(fd);
-        return res;
+        return -EIO;
     }
 
     // Now process the loaded file - header is right at the start of the loaded
@@ -102,7 +102,7 @@ int elf_load_file(const char *path, struct elf_file **file_out)
     if (res != 0)
     {
         fclose(fd);
-        return res;
+        return -ELDELF;
     }
 
     // This is unrealistic but it is good enough for a very simple scenario, to

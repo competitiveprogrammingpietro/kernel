@@ -182,7 +182,6 @@ void kernel_main()
   current_col = current_row = 0;
 
   // base_framebuffer[0] = 0x0341; // Endianess makes it 0x41 0x3 - letter 'A' color green
-  print("\n\n\nThis is Pietro's OS ...\n\t*brand* new!\n");
 
   // Initialise GDT
   memset(gdt, 0x00, sizeof(gdt));
@@ -216,7 +215,7 @@ void kernel_main()
 
   // idt_register_interrupt(0x20, timer_callback);
   struct process *process;
-  int res = process_load_executable("0:/mainc.elf", &process);
+  int res = process_load_executable("0:/shell.elf", &process);
   if (res != PEACHOS_OK)
   {
     panic("Failed to load process");

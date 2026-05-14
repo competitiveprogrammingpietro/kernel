@@ -6,19 +6,20 @@ int main(int argc, char **argv)
     print(atoi(1024));
     print("\n");
     putchar((int)'a');
-    printf("My age is %i\n", 42);
-     void *ptr = malloc(10);
+    // printf("My age is %i\n", 42);
+    char buffer[1024];
+    printf("Readline....\n");
+    readline(buffer, 1024, 1);
+    print(buffer);
+    print("\n");
+    void *ptr = malloc(10);
     free(ptr);
     while (1)
     {
-        char buffer[2] = {.0};
-        buffer[0] = getkey();
-        if (getkey() != 0)
+        int c = getkey();
+        if (c != 0)
         {
-            print("\n");
-            printf("Key pressed %i\n", (int)buffer[0]);
-            print(buffer);
-            print("\n");
+            putchar(c);
         }
     }
     return 0;

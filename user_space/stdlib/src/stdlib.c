@@ -17,6 +17,15 @@ int getkey()
     return asm_getkey();
 }
 
+int getkey_blocking()
+{
+    // This function spins until a key is read
+    int c = 0;
+    while ((c = asm_getkey()) == 0)
+        ;
+    return c;
+}
+
 int putchar(int c)
 {
     asm_putchar(c);
@@ -100,4 +109,42 @@ char *atoi(int n)
         text[--index] = '-';
 
     return &text[index];
+}
+
+void readline(char *out, int n, int echo)
+{
+    int i = 0;
+    while (i < n - 1)
+    {
+        char c = (char)getkey_blocking();
+
+        // Carriage return '\r', 13
+        if (c == '\r')
+        {
+            break;
+        }
+
+        if (c == '\n')
+        {
+            break;
+        }
+
+        if (echo)
+        {
+            putchar(c);
+        }
+
+        // Backspace
+        if (c == '\b' && i > 0)
+        {
+            i--;
+            out[i] = 0x00;
+            continue;
+        }
+        out[i] = c;
+        i++;
+    }
+
+    // Add the null terminator
+    out[i] = 0x00;
 }

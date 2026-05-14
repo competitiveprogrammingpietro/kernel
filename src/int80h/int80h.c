@@ -26,7 +26,6 @@ void *int80h_print(struct interrupt_frame *iframe)
     {
         panic("task_copy_from_task_to_kernel: fatal error");
     }
-    print("hi");
     print(buffer);
     return 0;
 }
@@ -58,6 +57,42 @@ void *int80h_free(struct interrupt_frame *frame)
     return 0;
 }
 
+void *int80h_exec_process(struct interrupt_frame *iframe)
+{
+    char executable_file_path[PEACHOS_MAX_PATH];
+    void *executable_file_path_ptr = task_get_stack_item(task_current(), 0);
+    int res = copy_string_from_task(
+        task_current(),
+        executable_file_path_ptr,
+        executable_file_path,
+        sizeof(executable_file_path));
+
+    if (res < 0)
+    {
+        goto out;
+    }
+
+    // Our 'PATH' is drive '0:/'
+    char path[PEACHOS_MAX_PATH];
+    strcpy(path, "0:/");
+    strcpy(path[3], executable_file_path);
+
+    struct process *process = 0;
+    process_load_executable(executable_file_path, &process);
+    
+    res = process_load_switch(path, &process);
+    if (res < 0)
+    {
+        goto out;
+    }
+
+    task_switch(process->task);
+    task_return(&process->task->registers);
+
+out:
+    return 0;
+}
+
 void int80h_register_commands()
 {
     isr80h_register_command(SYSTEM_COMMAND_SUM, int80h_sum);
@@ -66,4 +101,5 @@ void int80h_register_commands()
     isr80h_register_command(SYSTEM_COMMAND_PUTKEY, int80h_putkey);
     isr80h_register_command(SYSTEM_COMMAND_MALLOC, int80h_malloc);
     isr80h_register_command(SYSTEM_COMMAND_FREE, int80h_free);
+    isr80h_register_command(SYSTEM_COMMAND_EXEC_PROCESS, int80h_exec_process);
 }

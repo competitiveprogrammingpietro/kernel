@@ -26,6 +26,7 @@ all: ./bin/boot.bin  ./bin/kernel.bin user_programs
 	sudo cp ./user_space/programs/simple/build/blank.elf /mnt/d
 	sudo cp ./user_space/programs/simple/build/blank.bin /mnt/d
 	sudo cp ./user_space/programs/mainc/build/mainc.elf /mnt/d
+	sudo cp ./user_space/programs/shell/build/shell.elf /mnt/d
 	sudo umount /mnt/d
 
 ./bin/boot.bin: ./src/boot/boot.asm
@@ -55,6 +56,7 @@ user_programs:
 	cd ./user_space/stdlib/ && $(MAKE)
 	cd ./user_space/programs/simple && $(MAKE)
 	cd ./user_space/programs/mainc && $(MAKE)
+	cd ./user_space/programs/shell && $(MAKE)
 
 clean:
 	echo $(OBJ_C) $(OBJ_ASM)
@@ -64,6 +66,7 @@ clean:
 	rm -rf ./user_space/programs/simple/build || true
 	rm -rf ./user_space/programs/mainc/build || true
 	rm -rf ./user_space/stdlib/build || true
+	rm -rf ./user_space/programs/shell/build || true
 
 
 
