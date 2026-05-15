@@ -22,7 +22,8 @@ struct task *task_current()
     return current_task;
 }
 
-struct task *task_new(struct process *process)
+// This function creates a new task from the given process
+struct task *task_create_from_process(struct process *process)
 {
     int res = 0;
     struct task *task = kzalloc(sizeof(struct task));
@@ -44,8 +45,8 @@ struct task *task_new(struct process *process)
 
     if (process->process_file_type == PROCESS_FILE_TYPE_ELF)
     {
-        task->registers.ip = 
-            ((struct elf_header *) process->elf_file->elf_memory)->e_entry;
+        task->registers.ip =
+            ((struct elf_header *)process->elf_file->elf_memory)->e_entry;
     }
     task->registers.ss = USER_DATA_SEGMENT;
     task->registers.cs = USER_CODE_SEGMENT;
@@ -72,7 +73,6 @@ struct task *task_new(struct process *process)
         task_tail = task;
     }
 
-    current_task = task;
     return task;
 }
 
@@ -125,16 +125,24 @@ int task_free(struct task *task)
     return 0;
 }
 
+void task_set_current(struct task *task)
+{
+    current_task = task;
+}
+
+// Places the CPU in the task's context and set the task as the current task, the
+// function leaves the part that makes the CPU jumping to the task's code out as
+// that is done explicity.
 int task_context(struct task *task)
 {
-    task_user_segments(); // Switch segments to user segment
+    task_user_segments(); // switch segments to user segments
     current_task = task;
-    paging_page_directory_switch(task->page_directory);
+    paging_page_directory_switch(task->page_directory); // switch the page directory to the task's page directory
     return 0;
 }
 
 // Idiotic function here just for the time being ..
-void task_run_head()
+void task_execute_current()
 {
     if (!current_task)
     {
@@ -142,7 +150,7 @@ void task_run_head()
     }
 
     task_context(task_head);
-    task_jump_to(&task_head->registers);
+    task_execute_context(&task_head->registers);
 }
 
 void task_save_state(struct task *task, struct interrupt_frame *frame)

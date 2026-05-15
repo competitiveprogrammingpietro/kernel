@@ -137,7 +137,7 @@ int process_load_executable(
     }
 
     // Create a task
-    task = task_new(process);
+    task = task_create_from_process(process);
     if (ERROR_I(task) == 0)
     {
         return ERROR_I(task);
@@ -261,7 +261,7 @@ void *process_malloc(struct process *process, size_t size)
     return ptr;
 }
 
-void process_free(struct process* process, void* ptr)
+void process_free(struct process *process, void *ptr)
 {
 
     // We cannot allow the process to free someone else's memory

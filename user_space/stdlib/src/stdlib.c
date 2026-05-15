@@ -6,6 +6,7 @@ extern int asm_getkey();
 extern void *asm_malloc();
 extern void asm_free();
 extern void asm_putchar(int c);
+extern void asm_exec(char *);
 
 void print(const char *str)
 {
@@ -147,4 +148,9 @@ void readline(char *out, int n, int echo)
 
     // Add the null terminator
     out[i] = 0x00;
+}
+
+void exec(char *filename)
+{
+    asm_exec(filename);
 }

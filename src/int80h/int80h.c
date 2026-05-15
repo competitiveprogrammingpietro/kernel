@@ -3,6 +3,8 @@
 #include "kernel.h"
 #include "keyboard/keyboard.h"
 #include "task/process.h"
+#include "task/task.h"
+#include "string/string.h"
 
 void *int80h_sum(struct interrupt_frame *iframe)
 {
@@ -60,8 +62,8 @@ void *int80h_free(struct interrupt_frame *frame)
 void *int80h_exec_process(struct interrupt_frame *iframe)
 {
     char executable_file_path[PEACHOS_MAX_PATH];
-    void *executable_file_path_ptr = task_get_stack_item(task_current(), 0);
-    int res = copy_string_from_task(
+    void *executable_file_path_ptr = task_stack_item(task_current(), 0);
+    int res = task_copy_from_task_to_kernel(
         task_current(),
         executable_file_path_ptr,
         executable_file_path,
@@ -69,27 +71,30 @@ void *int80h_exec_process(struct interrupt_frame *iframe)
 
     if (res < 0)
     {
-        goto out;
+        return (void *)res;
     }
 
-    // Our 'PATH' is drive '0:/'
+    // Our 'PATH' is drive '0:/' - simple and effective for now.
     char path[PEACHOS_MAX_PATH];
     strcpy(path, "0:/");
-    strcpy(path[3], executable_file_path);
+    strcpy(&path[3], executable_file_path);
 
     struct process *process = 0;
     process_load_executable(executable_file_path, &process);
-    
-    res = process_load_switch(path, &process);
+
     if (res < 0)
     {
-        goto out;
+        return (void *)res;
     }
 
-    task_switch(process->task);
-    task_return(&process->task->registers);
+    // Set the process as the current and switch to the task context,
+    process_set_current(process);
+    task_context(process->task);
 
-out:
+    // Now we are ready to ask the CPU to execute the task's code, this makes
+    // the function not to return any value, the return that follows is there
+    // to make the compiler happy.
+    task_execute_context(&process->task->registers);
     return 0;
 }
 

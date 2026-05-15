@@ -11,4 +11,6 @@ char *atoi(int n);
 int putchar(int c);
 int printf(const char *fmt, ...);
 void readline(char *out, int n, int echo);
+void exec(char * filename);
+
 #endif

@@ -3,12 +3,12 @@
 section .asm
 
 global task_restore_general_purpose_registers
-global task_jump_to
+global task_execute_context
 global task_user_segments
 
 ; this function takes in the struct registers and restores that, then
 ; jump to the task's IP, hence it jumps into user space
-task_jump_to:
+task_execute_context:
     mov ebp, esp
     ; PUSH THE DATA SEGMENT (SS WILL BE FINE)
     ; PUSH THE STACK ADDRESS

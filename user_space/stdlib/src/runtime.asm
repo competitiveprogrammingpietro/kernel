@@ -5,6 +5,7 @@ global asm_getkey:function
 global asm_malloc:function
 global asm_free:function
 global asm_putchar:function
+global asm_exec:function
 
 asm_print:
     push ebp
@@ -21,6 +22,16 @@ asm_getkey:
     mov ebp, esp
     mov eax, 2 ; Kernel command get_key()
     int 0x80
+    pop ebp
+    ret
+
+asm_putchar:
+    push ebp
+    mov ebp, esp
+    mov eax, 3 ; Command putchar
+    push dword [ebp+8]
+    int 0x80
+    add esp, 4
     pop ebp
     ret
 
@@ -45,11 +56,11 @@ asm_free:
     ret
 
 
-asm_putchar:
+asm_exec:
     push ebp
     mov ebp, esp
-    mov eax, 3 ; Command putchar
-    push dword [ebp+8]
+    mov eax, 6 ; Command exec
+    push dword [ebp+8] ; Filename
     int 0x80
     add esp, 4
     pop ebp

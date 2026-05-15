@@ -10,6 +10,7 @@ int main(int argc, char **argv)
     {
         print("$>");
         readline(line, sizeof(line), 1);
+        exec(line);
         print("\n");
         print(line);
         print("\n");

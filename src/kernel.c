@@ -216,50 +216,20 @@ void kernel_main()
   // idt_register_interrupt(0x20, timer_callback);
   struct process *process;
   int res = process_load_executable("0:/shell.elf", &process);
+  // int res = process_load_executable("0:/mainc.elf", &process);
+
   if (res != PEACHOS_OK)
   {
     panic("Failed to load process");
   }
 
+  // Place the process as current ...
   process_set_current(process);
+
+  // .. and its task too
+  task_set_current(process->task);
 
   keyboard_init();
 
-  task_run_head();
-
-  /*
-  enable_interrupts();
-
-  int fd = fopen("0:/file.txt", "r");
-  if (fd > 0)
-  {
-    char buf[25];
-    fread(buf, 25, 1, fd);
-    buf[25] = 0x0;
-    print(buf);
-    print("\n");
-    struct file_stat fs;
-    fstat(fd, &fs);
-    fclose(fd);
-    print("\nOK.\n");
-  }
-  while (1)
-  {
-  }
-  */
-
-  /*
-    // Test my precious functions
-    print_u32_binary((unsigned int)0x10);
-    // Test heap addresses
-    print_u32_hex((unsigned int)0xf0);
-    int i = 0;
-    while (i < 10)
-   {
-     void *ptr = kzalloc(58);
-     print_u32_hex((unsigned int)ptr);
-     print("\n");
-     i++;
-   }
- */
+  task_execute_current();
 }
