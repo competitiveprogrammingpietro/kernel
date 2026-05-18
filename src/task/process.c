@@ -131,10 +131,6 @@ int process_load_executable(
     process->stack = process_stack;
     process->id = process_id;
     process->allocation_index = 0;
-    for (int i = 0; i < PEACHOS_MAX_PROGRAM_ALLOCATIONS; i++)
-    {
-        process->allocations[i] = 0x00;
-    }
 
     // Create a task
     task = task_create_from_process(process);
@@ -239,7 +235,22 @@ void *process_malloc(struct process *process, size_t size)
         return ERROR(-ENOMEM);
     }
 
-    // Rudimentary, get the first empty spot
+    // Map the memory to userspace, the mapping is extremely simple as we merely
+    // map the address to itself, setting the correct flags.
+    int res = paging_map_single_page(
+        process->task->page_directory,
+        ptr,
+        (uint32_t)ptr,
+        PAGING_IS_PRESENT | PAGING_IS_WRITEABLE | PAGING_ACCESS_FROM_ALL);
+
+    if (res != 0)
+    {
+        kfree(ptr);
+        return ERROR(res);
+    }
+
+    // Rudimentary, get the first empty spot, if the index has reached the max
+    // amount of allocations wrap it around
     if (process->allocation_index == PEACHOS_MAX_PROGRAM_ALLOCATIONS)
     {
         process->allocation_index = 0;
@@ -248,7 +259,8 @@ void *process_malloc(struct process *process, size_t size)
     int i = process->allocation_index;
     for (; i < PEACHOS_MAX_PROGRAM_ALLOCATIONS; i++)
     {
-        if (process->allocations[i] == 0x00)
+        // A size of zero marks it as free
+        if (process->allocations[i].size == 0x00)
             break;
     }
 
@@ -256,7 +268,8 @@ void *process_malloc(struct process *process, size_t size)
     {
         return ERROR(-ENOMEM);
     }
-    process->allocations[i] = ptr;
+    process->allocations[i].ptr = ptr;
+    process->allocations[i].size = size;
     process->allocation_index = i + 1;
     return ptr;
 }
@@ -268,10 +281,23 @@ void process_free(struct process *process, void *ptr)
     int found = 0;
     for (int i = 0; i < PEACHOS_MAX_PROGRAM_ALLOCATIONS; i++)
     {
-        if (process->allocations[i] != ptr)
+        if (process->allocations[i].ptr != ptr)
             continue;
 
-        process->allocations[i] = 0x00;
+        process->allocations[i].ptr = 0x00;
+        process->allocations[i].size = 0x00;
+
+        // All we do from a paging standpoint is to amend the page's flags
+        // to ensure that a page fault is raised if the memory is accessed
+        int res = paging_map_single_page(
+            process->task->page_directory,
+            ptr,
+            (uint32_t)ptr,
+            0x0); // These flags ensure that the page is not accessible
+        if (res < 0)
+        {
+            panic("process_free(): could not map a single page of memory");
+        }
         found = 1;
         break;
     }

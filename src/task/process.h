@@ -8,6 +8,12 @@
 #define PROCESS_FILE_TYPE_ELF 0
 #define PROCESS_FILE_TYPE_BINARY 1
 
+struct process_memory_allocation
+{
+    void *ptr;
+    size_t size;
+};
+
 struct process
 {
     // The process id
@@ -20,7 +26,7 @@ struct process
     struct task *task;
 
     // The memory (malloc) allocations of the process
-    void *allocations[PEACHOS_MAX_PROGRAM_ALLOCATIONS];
+    struct process_memory_allocation allocations[PEACHOS_MAX_PROGRAM_ALLOCATIONS];
 
     int allocation_index;
 

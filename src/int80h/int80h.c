@@ -80,7 +80,7 @@ void *int80h_exec_process(struct interrupt_frame *iframe)
     strcpy(&path[3], executable_file_path);
 
     struct process *process = 0;
-    process_load_executable(executable_file_path, &process);
+    process_load_executable(path, &process);
 
     if (res < 0)
     {
