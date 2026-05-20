@@ -154,3 +154,45 @@ void exec(char *filename)
 {
     asm_exec(filename);
 }
+
+struct cmd_arg *parse_command(const char *command)
+{
+    struct cmd_arg *root = 0;
+
+    // Copy of the command
+    char scommand[1024];
+    strncpy(scommand, command, sizeof(scommand));
+
+    char *token = strtok(scommand, " ");
+    if (!token)
+    {
+        return root;
+    }
+
+    root = malloc(sizeof(struct cmd_arg));
+    if (!root)
+    {
+        return 0;
+    }
+
+    strncpy(root->arg, token, sizeof(root->arg));
+    root->next = 0;
+
+    struct cmd_arg *current = root;
+    token = strtok(NULL, " ");
+    while (token != 0)
+    {
+        struct cmd_arg *narg = peachos_malloc(sizeof(struct cmd_arg));
+        if (!narg)
+        {
+            break;
+        }
+
+        strncpy(narg->arg, token, sizeof(narg->arg));
+        narg->next = 0x00;
+        current->next = narg;
+        current = narg;
+        token = strtok(NULL, " ");
+    }
+    return root;
+}
