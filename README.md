@@ -17,7 +17,7 @@ Main accomplishement at the moment of writing:
 - Kernel heap
 - Pagination enabled, although flat, not handling of misses yet
 - Interrupt handlers PICs structure in place
-- Process loading and execution, raw binary still not ELF.
+- Process loading and execution, raw binary and ELF format
 
 truckloads of comments!
 

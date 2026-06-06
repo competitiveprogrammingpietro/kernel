@@ -98,6 +98,22 @@ void *int80h_exec_process(struct interrupt_frame *iframe)
     return 0;
 }
 
+void *isr80h_exit(struct interrupt_frame *frame)
+{
+    // terminate the process and start executing the next one
+    process_terminate(task_current()->process);
+    struct task *t = task_get_next();
+    if (!t)
+    {
+        panic("There are no currently other task to run\n");
+    }
+    print("Executing next task as the current process has ended\n");
+    process_set_current(t->process);
+    task_context(t);
+    task_execute_current();
+    return (void *)0;
+}
+
 void int80h_register_commands()
 {
     isr80h_register_command(SYSTEM_COMMAND_SUM, int80h_sum);
@@ -107,4 +123,5 @@ void int80h_register_commands()
     isr80h_register_command(SYSTEM_COMMAND_MALLOC, int80h_malloc);
     isr80h_register_command(SYSTEM_COMMAND_FREE, int80h_free);
     isr80h_register_command(SYSTEM_COMMAND_EXEC_PROCESS, int80h_exec_process);
+    isr80h_register_command(SYSTEM_COMMAND_EXIT, int80h_exec_process);
 }

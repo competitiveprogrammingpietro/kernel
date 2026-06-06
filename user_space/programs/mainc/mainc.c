@@ -12,7 +12,7 @@ int main(int argc, char **argv)
     strcpy(ptr, "\nIAMMALLOCMEM\n");
     print(ptr);
     free(ptr);
-    ptr[2] = 'a'; // This causes an unhandled page fault
+    // ptr[2] = 'a'; // This causes an unhandled page fault
     print("AFTER FREE");
     while (1)
     {
@@ -20,6 +20,10 @@ int main(int argc, char **argv)
         if (c != 0)
         {
             putchar(c);
+        }
+        if (c == 'h' || c == 'H')
+        {
+            break;
         }
     }
     return 0;

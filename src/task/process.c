@@ -310,3 +310,30 @@ void process_free(struct process *process, void *ptr)
     // We can now free the kernel space memory
     kfree(ptr);
 }
+
+int process_terminate(struct process * process)
+{
+
+    // Free all data allocated during the lifetime of the process
+    for (int i = 0; i < PEACHOS_MAX_PROGRAM_ALLOCATIONS; i++)
+    {
+        process_free(process, process->allocations[i].ptr);
+    }
+
+    // Free the binary image loaded into memory
+    switch (process->process_file_type)
+    {
+        case PROCESS_FILE_TYPE_BINARY:
+            kfree(process->physical_memory);
+        case PROCESS_FILE_TYPE_ELF:
+            elf_close(process->elf_file);
+        default:
+            return -EINVARGS;
+    }
+
+    kfree(process->stack);
+    task_free(process->task);
+
+    // Remove the process from our list of processes to run
+    processes[process->id] = 0x0;
+}

@@ -22,4 +22,5 @@ int printf(const char *fmt, ...);
 void readline(char *out, int n, int echo);
 void exec(char *filename);
 struct cmd_arg *parse_command(const char *command);
+void exit();
 #endif

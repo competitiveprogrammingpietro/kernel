@@ -7,8 +7,20 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define KEYBOARD_CLASSIC_CAPSLOCK 0x3A
+
+int keyboard_classic_init();
+
+struct keyboard classic_keyboard = {
+    .name = "keyboard_classic",
+    .capslock_state = 0,
+    .init = keyboard_classic_init};
+struct keyboard *keyboard_classic()
+{
+    return &classic_keyboard;
+}
+
 // We do not bother with UNICODE or anthing else which is not ASCII for now
-int classic_keyboard_init();
 
 // https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_1
 static uint8_t keyboard_classic_scan_set_one[] = {
@@ -25,7 +37,6 @@ static uint8_t keyboard_classic_scan_set_one[] = {
     0x00, '7', '8', '9', '-', '4', '5',
     '6', '+', '1', '2', '3', '0', '.'};
 
-
 uint8_t classic_keyboard_scancode_to_char(uint8_t scancode)
 {
 
@@ -34,7 +45,17 @@ uint8_t classic_keyboard_scancode_to_char(uint8_t scancode)
     {
         return 0;
     }
-    return keyboard_classic_scan_set_one[scancode];
+
+    char c = keyboard_classic_scan_set_one[scancode];
+
+    if (classic_keyboard.capslock_state == 0)
+    {
+        if (c >= 'A' && c <= 'Z')
+        {
+            c += 32;
+        }
+    }
+    return c;
 }
 
 void keyboard_classic_handle_interrupt()
@@ -52,6 +73,11 @@ void keyboard_classic_handle_interrupt()
         return;
     }
 
+    if (scancode == KEYBOARD_CLASSIC_CAPSLOCK)
+    {
+        keyboard_capslock(&classic_keyboard);
+    }
+
     uint8_t c = classic_keyboard_scancode_to_char(scancode);
     if (c != 0)
     {
@@ -66,11 +92,4 @@ int keyboard_classic_init()
                            keyboard_classic_handle_interrupt);
     outb(PS2_PORT, PS2_COMMAND_ENABLE_FIRST_PORT);
     return 0;
-}
-struct keyboard classic_keyboard = {
-    .name = "keyboard_classic",
-    .init = keyboard_classic_init};
-struct keyboard *keyboard_classic()
-{
-    return &classic_keyboard;
 }

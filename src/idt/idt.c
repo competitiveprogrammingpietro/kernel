@@ -3,6 +3,7 @@
 #include "config.h"
 #include "status.h"
 #include "memory/memory.h"
+#include "task/process.h"
 #include "kernel.h"
 #include "io/io.h"
 
@@ -103,6 +104,42 @@ int idt_register_interrupt(int interrupt,
 	return 0;
 }
 
+// this function handles the exceptions the CPU raises as specified by
+// https://wiki.osdev.org/Exceptions. We do not differentiate among
+// them and we merely terminate the process
+void idt_handle_exception()
+{
+	print("Terminating process due to CPU exception\n");
+
+	// terminate the process and start executing the next one
+	process_terminate(task_current()->process);
+	struct task *t = task_get_next();
+	if (!t)
+	{
+		panic("There are no currently other task to run\n");
+	}
+
+	process_set_current(t->process);
+	task_context(t);
+	task_execute_current();
+}
+
+void idt_clock()
+{
+	outb(0x20, 0x20);
+
+	// get the next task and execute it
+	struct task *t = task_get_next();
+	if (!t)
+	{
+		panic("There are no currently tasks to run\n");
+	}
+
+	process_set_current(t->process);
+	task_context(t);
+	task_execute_current();
+}
+
 void idt_init()
 {
 	memset(idt_descriptors, 0, sizeof(idt_descriptors));
@@ -121,6 +158,14 @@ void idt_init()
 	// Mumble mumble. Should not they use the register_interrupt_handler
 	idt_set(0, idt_zero);
 	idt_set(0x80, int80h);
+
+	// Handle all the exceptions
+	for (int i = 0; i < 0x20; i++)
+	{
+		idt_register_interrupt(i, idt_handle_exception);
+	}
+
+	idt_register_interrupt(0x20, idt_clock);
 
 	// Load the IDTR up
 	idt_load(&idtr_descriptor);

@@ -6,6 +6,7 @@ global asm_malloc:function
 global asm_free:function
 global asm_putchar:function
 global asm_exec:function
+global asm_exit:function
 
 asm_print:
     push ebp
@@ -63,5 +64,13 @@ asm_exec:
     push dword [ebp+8] ; Filename
     int 0x80
     add esp, 4
+    pop ebp
+    ret
+
+asm_exit:
+    push ebp
+    mov ebp, esp
+    mov eax, 7 ; Command process exit
+    int 0x80
     pop ebp
     ret

@@ -11,6 +11,7 @@ enum SYSTEM_COMMAND
     SYSTEM_COMMAND_MALLOC,
     SYSTEM_COMMAND_FREE,
     SYSTEM_COMMAND_EXEC_PROCESS,
+    SYSTEM_COMMAND_EXIT,
 };
 
 void *int80h_sum(struct interrupt_frame *iframe);

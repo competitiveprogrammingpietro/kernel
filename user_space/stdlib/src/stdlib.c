@@ -182,7 +182,7 @@ struct cmd_arg *parse_command(const char *command)
     token = strtok(NULL, " ");
     while (token != 0)
     {
-        struct cmd_arg *narg = peachos_malloc(sizeof(struct cmd_arg));
+        struct cmd_arg *narg = malloc(sizeof(struct cmd_arg));
         if (!narg)
         {
             break;

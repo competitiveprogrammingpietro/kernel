@@ -70,6 +70,12 @@ char keyboard_pop()
     return c;
 }
 
+// Brutally switch the state by negating it
+void keyboard_capslock(struct keyboard * k)
+{
+    k->capslock_state = k->capslock_state ? 0 : 1;
+}
+
 void keyboard_init()
 {
     // Insert the classic keyboard

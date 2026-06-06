@@ -59,4 +59,5 @@ struct process *process_current();
 int process_set_current(struct process *process);
 void *process_malloc(struct process *process, size_t size);
 void process_free(struct process *process, void *ptr);
+int process_terminate(struct process *process);
 #endif

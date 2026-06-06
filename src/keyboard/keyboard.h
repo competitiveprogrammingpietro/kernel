@@ -5,13 +5,13 @@
 #define PS2_PORT 0x64
 #define PS2_COMMAND_ENABLE_FIRST_PORT 0xAE
 
-
 typedef int (*KEYBOARD_INIT_FUNCTION)();
 
 struct keyboard
 {
     KEYBOARD_INIT_FUNCTION init;
     char name[20];
+    int capslock_state;
     struct keyboard *next;
 };
 
@@ -19,5 +19,5 @@ void keyboard_init();
 void keyboard_backspace();
 void keyboard_push(char c);
 char keyboard_pop();
-
+void keyboard_capslock(struct keyboard *k);
 #endif
