@@ -12,7 +12,11 @@ degree of effort has been made to improve naming, write comments and get it to
 be simpler through the rewriting of some parts.
 
 This is to highlight that this course has not been passively followed, on the
-contrary a great deal of effort has been spent on it.
+contrary a great deal of effort has been spent on it. I started approximately
+at July 2025 to finish it off the first week of June 2026, you will not be able
+to see this from the commit as I managed to mess around with GIT so that the initial
+commit had to be remade, but I wrote down the date of the first commit from the
+previous repo: 30 July 2025
 
 The point of the exercise is **not** to present the best kernel in the world, the best algorithms and the best data structures are to be found elsewhere however the challenge is to make a unit of work, a program, that implements a *rudimentary* small OS.
 
