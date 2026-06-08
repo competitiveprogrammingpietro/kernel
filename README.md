@@ -5,7 +5,14 @@ https://dragonzap.com/kernel
 
 The course is not very academic and many core concepts, such as pagination, FAT, bootloaders and others required myself to go back to university material, where all of the above was covered but never actually touched first hand.
 
-It might look like a paradox however although quite tiring the *lack* of structure worked to my advantage as it required a good level of self studying back to hardware fundamentals and a decent deal of rewrite, although the main structure greatly resembles the course's one.
+It might look like a paradox however although quite tiring the *lack* of structure worked to my advantage as it required a good level of self studying back to hardware fundamental.
+
+The backbone of the project greatly resembles the course's one however a decent
+degree of effort has been made to improve naming, write comments and get it to
+be simpler through the rewriting of some parts.
+
+This is to highlight that this course has not been passively followed, on the
+contrary a great deal of effort has been spent on it.
 
 The point of the exercise is **not** to present the best kernel in the world, the best algorithms and the best data structures are to be found elsewhere however the challenge is to make a unit of work, a program, that implements a *rudimentary* small OS.
 
