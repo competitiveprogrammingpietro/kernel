@@ -85,7 +85,8 @@ static int process_load_executable_elf(
 // creates a new process from an executable.
 int process_load_executable(
     const char *filename,
-    struct process **rprocess)
+    struct process **rprocess,
+    char *input)
 {
     struct task *task = 0;
     struct process *process;
@@ -127,7 +128,15 @@ int process_load_executable(
         return -ENOMEM;
     }
 
+    // Copy the source file across
     strncpy(process->filename, filename, sizeof(process->filename));
+
+    // Copy the arguments onto the *end* of the stack, ..
+    strncpy(process_stack, input, PEACHOS_PROGRAM_ARGUMENT_MAX_SIZE);
+
+    // .. and onto the process arg, used for debugging
+    strncpy(process->argument, input, PEACHOS_PROGRAM_ARGUMENT_MAX_SIZE);
+
     process->stack = process_stack;
     process->id = process_id;
     process->allocation_index = 0;
@@ -140,6 +149,8 @@ int process_load_executable(
     }
 
     process->task = task;
+
+    task_queue(task);
 
     // The mapping logic beheaves differently for raw binaries or ELF, hence the
     // switch
@@ -311,7 +322,7 @@ void process_free(struct process *process, void *ptr)
     kfree(ptr);
 }
 
-int process_terminate(struct process * process)
+int process_terminate(struct process *process)
 {
 
     // Free all data allocated during the lifetime of the process
@@ -323,12 +334,12 @@ int process_terminate(struct process * process)
     // Free the binary image loaded into memory
     switch (process->process_file_type)
     {
-        case PROCESS_FILE_TYPE_BINARY:
-            kfree(process->physical_memory);
-        case PROCESS_FILE_TYPE_ELF:
-            elf_close(process->elf_file);
-        default:
-            return -EINVARGS;
+    case PROCESS_FILE_TYPE_BINARY:
+        kfree(process->physical_memory);
+    case PROCESS_FILE_TYPE_ELF:
+        elf_close(process->elf_file);
+    default:
+        return -EINVARGS;
     }
 
     kfree(process->stack);

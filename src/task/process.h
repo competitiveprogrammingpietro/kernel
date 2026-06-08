@@ -45,16 +45,20 @@ struct process
     // The physical pointer to the stack memory
     void *stack;
 
+    char argument[PEACHOS_PROGRAM_ARGUMENT_MAX_SIZE]; // Fixed size for the arguments 
+
     struct keyboard_buffer
     {
         char buffer[PEACHOS_KEYBOARD_BUFFER_SIZE]; // circular buffer
         int head, tail;
     } keyboard_buffer;
+
 };
 
 int process_load_executable(
     const char *filename,
-    struct process **rprocess);
+    struct process **rprocess,
+    char *input);
 struct process *process_current();
 int process_set_current(struct process *process);
 void *process_malloc(struct process *process, size_t size);

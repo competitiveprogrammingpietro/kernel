@@ -82,15 +82,17 @@ disable_interrupts:
 %endrep
 
 int80h:
-    ; Interrupt frame start
-	; The CPU has already pushed to us upon entering this routine: 
+    ; Interrupt frame start, this has to match the order of the interrupt frame
+    ; C defined struct, the CPU has already pushed to us upon entering this
+    ; routine: 
     ; uint32_t ip
     ; uint32_t cs;
     ; uint32_t flags
     ; uint32_t sp;
     ; uint32_t ss;
-    ; We not complete the interrupt frame by pushing all the general purpose registers
-	; to the stack
+
+    ; We now complete the interrupt frame by pushing all the general purpose
+    ; registers to the stack
     pushad
     ; INTERRUPT FRAME END
 
@@ -100,6 +102,8 @@ int80h:
     ; EAX holds our command lets push it to the stack for int80_handler
     push eax
     call int80_handler
+
+    ; store and restore the return value
     mov dword[isr80h_handler_res], eax
     add esp, 8
 

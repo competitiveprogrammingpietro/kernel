@@ -9,7 +9,9 @@ It might look like a paradox however although quite tiring the *lack* of structu
 
 The point of the exercise is **not** to present the best kernel in the world, the best algorithms and the best data structures are to be found elsewhere however the challenge is to make a unit of work, a program, that implements a *rudimentary* small OS.
 
-A good deal of the first part of the course has been completed which is why I am convinced that I can present this as part of a job application. Currently the projet implements a single threaded kernel but it is going to be expanded to be a multithreaded kernel as I go along.
+The first part of the course has been completed which is why I have taken the
+bravery to publish the project and show it as part of a job application or 
+tech talk.
 
 Main accomplishement at the moment of writing:
 
@@ -18,6 +20,7 @@ Main accomplishement at the moment of writing:
 - Pagination enabled, although flat, not handling of misses yet
 - Interrupt handlers PICs structure in place
 - Process loading and execution, raw binary and ELF format
+- Naive task switching
 
 truckloads of comments!
 

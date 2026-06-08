@@ -69,10 +69,12 @@ void write_char(char c)
       current_row = -1;
       current_col = VGA_COLS - 1;
     }
+    else
+    {
+      current_col = current_col - 1;
+    }
 
-    current_col = current_col - 1;
     video_memory[current_row * VGA_COLS + current_col] = COLOR_TERMINAL(' ', 15);
-    current_col = current_col - 1;
     return;
   }
 
@@ -213,10 +215,16 @@ void kernel_main()
 
   paging_enable();
 
-  // idt_register_interrupt(0x20, timer_callback);
-  struct process *process;
-  int res = process_load_executable("0:/shell.elf", &process);
-  // int res = process_load_executable("0:/mainc.elf", &process);
+  struct process *process_one, *process_two;
+
+  // Uncomment the next line for a shell
+  //int res = process_load_executable("0:/shell.elf", &process_one, 0x0);
+  //process_two = process_one; // Shut the compiler
+  //process_one = process_two;
+
+  // Or uncomment those two for the multitasking proof of concept
+  int res = process_load_executable("0:/mainc.elf", &process_one, "abc");
+  res = process_load_executable("0:/mainc.elf", &process_two, "123");
 
   if (res != PEACHOS_OK)
   {
@@ -224,12 +232,10 @@ void kernel_main()
   }
 
   // Place the process as current ...
-  process_set_current(process);
-
-  // .. and its task too
-  task_set_current(process->task);
+  process_set_current(process_one);
 
   keyboard_init();
 
+  task_switch_next();
   task_execute_current();
 }

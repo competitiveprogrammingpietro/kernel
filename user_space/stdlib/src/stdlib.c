@@ -1,4 +1,5 @@
 #include "stdlib.h"
+#include "string.h"
 #include <stdarg.h>
 
 extern void asm_print();
@@ -6,7 +7,7 @@ extern int asm_getkey();
 extern void *asm_malloc();
 extern void asm_free();
 extern void asm_putchar(int c);
-extern void asm_exec(char *);
+extern int asm_exec(char *c, char *i);
 
 void print(const char *str)
 {
@@ -150,9 +151,9 @@ void readline(char *out, int n, int echo)
     out[i] = 0x00;
 }
 
-void exec(char *filename)
+int exec(char *filename, char *input)
 {
-    asm_exec(filename);
+    return asm_exec(filename, input);
 }
 
 struct cmd_arg *parse_command(const char *command)

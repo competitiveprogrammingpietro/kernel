@@ -1,5 +1,11 @@
 [BITS 32]
 
+section .asm
+
+; _start is the real entry point for an user program.
+global _start
+extern main
+
 global asm_print:function
 global asm_getkey:function
 global asm_malloc:function
@@ -38,7 +44,7 @@ asm_putchar:
 
 asm_malloc:
     push ebp
-    mov ebp, esp
+    mov ebp, es
     mov eax, 4 ; Kernel command malloc
     push dword[ebp+8]
     int 0x80
@@ -61,9 +67,10 @@ asm_exec:
     push ebp
     mov ebp, esp
     mov eax, 6 ; Command exec
-    push dword [ebp+8] ; Filename
+    push dword[ebp+8] ; Filename
+    push dword[ebp+12] ; Input
     int 0x80
-    add esp, 4
+    add esp, 8
     pop ebp
     ret
 
@@ -73,4 +80,12 @@ asm_exit:
     mov eax, 7 ; Command process exit
     int 0x80
     pop ebp
+    ret
+
+; The first and only paramerer is copied by the OS at the end of the stack, 
+; at 0x3fb00, this is our silly little convention so we stick to it
+_start:
+    push 0x3fb000
+    call main
+    call asm_exit
     ret

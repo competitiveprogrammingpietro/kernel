@@ -58,33 +58,13 @@ struct task *task_create_from_process(struct process *process)
         task_free(task);
         return ERROR(res);
     }
-
-    // First task to be run
-    if (task_head == 0)
-    {
-        task_head = task;
-        task_tail = task;
-    }
-    else
-    {
-        // Append it to the tasks' list
-        task_tail->next = task;
-        task->prev = task_tail;
-        task_tail = task;
-    }
-
     return task;
 }
 
-struct task *task_get_next()
+struct task *task_switch_next()
 {
-
-    // We return the head if we are at the tail
-    if (!current_task->next)
-    {
-        return task_head;
-    }
-    return current_task->next;
+    current_task = current_task->next ? current_task->next : task_head;
+    return current_task;
 }
 
 static void task_list_remove(struct task *task)
@@ -125,11 +105,6 @@ int task_free(struct task *task)
     return 0;
 }
 
-void task_set_current(struct task *task)
-{
-    current_task = task;
-}
-
 // Places the CPU in the task's context and set the task as the current task, the
 // function leaves the part that makes the CPU jumping to the task's code out as
 // that is done explicity.
@@ -149,8 +124,8 @@ void task_execute_current()
         panic("task_run_first_ever_task(): No current task exists!\n");
     }
 
-    task_context(task_head);
-    task_execute_context(&task_head->registers);
+    task_context(current_task);
+    task_execute_context(&current_task->registers);
 }
 
 void task_save_state(struct task *task, struct interrupt_frame *frame)
@@ -255,4 +230,18 @@ void *task_stack_item(struct task *task, int index)
     result = (void *)sp[index];
     kernel_context();
     return result;
+}
+
+void task_queue(struct task *t)
+{
+
+    // The first one to get queued is the one which is set to current
+    if (!task_head)
+    {
+        task_head = t;
+        task_tail = t;
+        t->next = t;
+    }
+    task_tail->next = t;
+    task_tail = t;
 }

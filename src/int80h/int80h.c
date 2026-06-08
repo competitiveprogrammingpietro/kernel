@@ -62,7 +62,9 @@ void *int80h_free(struct interrupt_frame *frame)
 void *int80h_exec_process(struct interrupt_frame *iframe)
 {
     char executable_file_path[PEACHOS_MAX_PATH];
-    void *executable_file_path_ptr = task_stack_item(task_current(), 0);
+    char executable_argument[PEACHOS_MAX_PATH];
+    void *executable_argument_ptr = task_stack_item(task_current(), 0);
+    void *executable_file_path_ptr = task_stack_item(task_current(), 1);
     int res = task_copy_from_task_to_kernel(
         task_current(),
         executable_file_path_ptr,
@@ -74,13 +76,23 @@ void *int80h_exec_process(struct interrupt_frame *iframe)
         return (void *)res;
     }
 
+    res = task_copy_from_task_to_kernel(
+        task_current(),
+        executable_argument_ptr,
+        executable_argument,
+        sizeof(executable_argument));
+
+    if (res < 0)
+    {
+        return (void *)res;
+    }
     // Our 'PATH' is drive '0:/' - simple and effective for now.
     char path[PEACHOS_MAX_PATH];
     strcpy(path, "0:/");
     strcpy(&path[3], executable_file_path);
 
     struct process *process = 0;
-    process_load_executable(path, &process);
+    res = process_load_executable(path, &process, (char *)executable_argument);
 
     if (res < 0)
     {
@@ -98,17 +110,16 @@ void *int80h_exec_process(struct interrupt_frame *iframe)
     return 0;
 }
 
-void *isr80h_exit(struct interrupt_frame *frame)
+void *int80h_exit_process(struct interrupt_frame *frame)
 {
     // terminate the process and start executing the next one
     process_terminate(task_current()->process);
-    struct task *t = task_get_next();
+    struct task *t = task_switch_next();
     if (!t)
     {
         panic("There are no currently other task to run\n");
     }
     print("Executing next task as the current process has ended\n");
-    process_set_current(t->process);
     task_context(t);
     task_execute_current();
     return (void *)0;
@@ -123,5 +134,5 @@ void int80h_register_commands()
     isr80h_register_command(SYSTEM_COMMAND_MALLOC, int80h_malloc);
     isr80h_register_command(SYSTEM_COMMAND_FREE, int80h_free);
     isr80h_register_command(SYSTEM_COMMAND_EXEC_PROCESS, int80h_exec_process);
-    isr80h_register_command(SYSTEM_COMMAND_EXIT, int80h_exec_process);
+    isr80h_register_command(SYSTEM_COMMAND_EXIT, int80h_exit_process);
 }

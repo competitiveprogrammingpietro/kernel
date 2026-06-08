@@ -92,6 +92,9 @@ void *int80_handler(int command, struct interrupt_frame *iframe)
 	return res;
 }
 
+// this function registers the interrupt_callback to the vector of functions
+// which is used by the int80_handler, which is main entry point for all the
+// interrupts
 int idt_register_interrupt(int interrupt,
 						   INTERRUPT_HANDLER interrupt_callback)
 {
@@ -113,30 +116,24 @@ void idt_handle_exception()
 
 	// terminate the process and start executing the next one
 	process_terminate(task_current()->process);
-	struct task *t = task_get_next();
-	if (!t)
-	{
-		panic("There are no currently other task to run\n");
-	}
-
+	struct task *t = task_switch_next();
 	process_set_current(t->process);
 	task_context(t);
 	task_execute_current();
 }
 
+// this function is reponsible for the task switching
 void idt_clock()
 {
 	outb(0x20, 0x20);
 
 	// get the next task and execute it
-	struct task *t = task_get_next();
+	struct task *t = task_switch_next();
 	if (!t)
 	{
 		panic("There are no currently tasks to run\n");
 	}
-
 	process_set_current(t->process);
-	task_context(t);
 	task_execute_current();
 }
 
@@ -152,11 +149,15 @@ void idt_init()
 	{
 
 		// All interrupts point to their 'numbered' handler defined in asm
+		// which in turn forward the call to the int80_handler
 		idt_set(i, asm_interrupt_pointer_table[i]);
 	}
 
-	// Mumble mumble. Should not they use the register_interrupt_handler
-	idt_set(0, idt_zero);
+	idt_set(0, idt_zero); // old example could be removed
+
+	// set the main entry point to the int80h assembly routine
+	// which sets up the interrupt frame and calls the int80_handler
+	// C function
 	idt_set(0x80, int80h);
 
 	// Handle all the exceptions
@@ -167,6 +168,6 @@ void idt_init()
 
 	idt_register_interrupt(0x20, idt_clock);
 
-	// Load the IDTR up
+	// Load the IDTD up
 	idt_load(&idtr_descriptor);
 }

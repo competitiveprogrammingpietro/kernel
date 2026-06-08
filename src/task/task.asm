@@ -10,21 +10,20 @@ global task_user_segments
 ; jump to the task's IP, hence it jumps into user space
 task_execute_context:
     mov ebp, esp
-    ; PUSH THE DATA SEGMENT (SS WILL BE FINE)
-    ; PUSH THE STACK ADDRESS
-    ; PUSH THE FLAGS
-    ; PUSH THE CODE SEGMENT
-    ; PUSH IP
 
     ; Let's access the structure passed to us
     mov ebx, [ebp+4]
+
     ; push the data/stack selector
     push dword [ebx+44]
+
     ; Push the stack pointer
     push dword [ebx+40]
 
     ; Push the flags
     pushf
+
+    ; Enable interrupts from the flags, then push it back
     pop eax
     or eax, 0x200
     push eax

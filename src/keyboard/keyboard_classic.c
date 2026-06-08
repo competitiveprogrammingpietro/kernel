@@ -50,6 +50,7 @@ uint8_t classic_keyboard_scancode_to_char(uint8_t scancode)
 
     if (classic_keyboard.capslock_state == 0)
     {
+        // Shift the charater to be a lowercase
         if (c >= 'A' && c <= 'Z')
         {
             c += 32;

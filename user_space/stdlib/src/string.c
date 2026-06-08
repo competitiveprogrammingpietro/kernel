@@ -2,7 +2,7 @@
 
 // This are coming straigth from the course's commit I merely reviewed those
 // https://github.com/nibblebits/PeachOS/commit/d53f2cfcb9e8a3133e486a3396474e1e8908a944#diff-2502a4bf924ff1d39f05d570de3815c22a3b314108f8075723e824b0811edc8f
-char tolower(char s1)
+char stdlib_tolower(char s1)
 {
     if (s1 >= 65 && s1 <= 90)
     {
@@ -55,7 +55,7 @@ int istrncmp(const char *s1, const char *s2, int n)
     {
         u1 = (unsigned char)*s1++;
         u2 = (unsigned char)*s2++;
-        if (u1 != u2 && tolower(u1) != tolower(u2))
+        if (u1 != u2 && stdlib_tolower(u1) != stdlib_tolower(u2))
             return u1 - u2;
         if (u1 == '\0')
             return 0;
@@ -111,7 +111,7 @@ char *strncpy(char *dest, const char *src, int count)
     return dest;
 }
 
-int isdigit(char c)
+int stdlib_isdigit(char c)
 {
     return c >= 48 && c <= 57;
 }

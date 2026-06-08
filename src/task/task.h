@@ -43,7 +43,8 @@ struct task
 
 struct task *task_create_from_process(struct process *p);
 struct task *task_current();
-struct task *task_get_next();
+struct task *task_switch_next();
+void task_queue(struct task *t);
 int task_free(struct task *task);
 void task_save_state(struct task *task, struct interrupt_frame *frame);
 int task_context(struct task *task);
@@ -51,7 +52,6 @@ int task_context(struct task *task);
 void task_restore_general_purpose_registers(struct registers *registers);
 void task_execute_context(struct registers *registers);
 void task_user_segments();
-void task_set_current(struct task *task);
 void task_execute_current();
 int task_copy_from_task_to_kernel(struct task *t, void *virt, void *phys, int n);
 void *task_stack_item(struct task *task, int index);

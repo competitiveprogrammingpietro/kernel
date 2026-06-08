@@ -23,7 +23,7 @@ int strnlen(const char *ptr, int max)
 	return size;
 }
 
-int isdigit(char c)
+int stdlib_isdigit(char c)
 {
 	return c >= 48 && c <= 57;
 }
@@ -63,7 +63,7 @@ char *strncpy(char *dest, const char *src, int count)
 	return dest;
 }
 
-char tolower(char s)
+char stdlib_tolower(char s)
 {
 	if (s < 65 || s > 90)
 	{
@@ -101,8 +101,8 @@ int istrncmp(const char *s1, const char *s2, int n)
 {
 	while (n > 0)
 	{
-		unsigned char c1 = (unsigned char)tolower(*s1);
-		unsigned char c2 = (unsigned char)tolower(*s2);
+		unsigned char c1 = (unsigned char)stdlib_tolower(*s1);
+		unsigned char c2 = (unsigned char)stdlib_tolower(*s2);
 
 		if (c1 != c2)
 		{
