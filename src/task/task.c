@@ -111,12 +111,12 @@ int task_free(struct task *task)
 int task_context(struct task *task)
 {
     task_user_segments(); // switch segments to user segments
-    current_task = task;
     paging_page_directory_switch(task->page_directory); // switch the page directory to the task's page directory
     return 0;
 }
 
-// Idiotic function here just for the time being ..
+// execute the current task, this function returns control to userland
+// through the iretd call hence it does not return
 void task_execute_current()
 {
     if (!current_task)
@@ -124,7 +124,12 @@ void task_execute_current()
         panic("task_run_first_ever_task(): No current task exists!\n");
     }
 
+	process_set_current(current_task->process);
+
+    // set the page directory ...
     task_context(current_task);
+
+    // ... restore the registers
     task_execute_context(&current_task->registers);
 }
 

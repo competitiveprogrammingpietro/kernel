@@ -45,11 +45,11 @@ task_execute_context:
     call task_restore_general_purpose_registers
     add esp, 4
 
-    ; Let's leave kernel land and execute in user land!
+    ; leave the kernel and jump back to userland
     iretd
-    
-; This function takes as input the struct register defined in task.h and adjusting
-; the offset as needed restore them into the CPU's register
+
+; void task_execute_context(struct registers *registers)
+; the function restores the task's register 
 task_restore_general_purpose_registers:
     push ebp
     mov ebp, esp

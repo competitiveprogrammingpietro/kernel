@@ -70,6 +70,11 @@ disable_interrupts:
     ; Restore general purpose registers for user land
     popad
     mov eax, [isr80h_handler_res]
+
+    ; Now that we have restored the general purpose registers what remains
+    ; on the stack is what the iret instruction needs to restore the previous
+    ; context
+    ; IP, CS, FLAGS, SP, SS
     iret
 %endmacro
 

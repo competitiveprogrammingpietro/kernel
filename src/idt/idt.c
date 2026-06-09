@@ -30,11 +30,36 @@ void idt_interrupt_handler(int interrupt, struct interrupt_frame *frame)
 	kernel_context();
 	if (idt_interrupt_handlers[interrupt] != 0)
 	{
+
+		// There are two main cases for this:
+		// 1. Interrupt such as print, the task's registers are saved however
+		//    those registers are going to be restored by the assembly code
+		//	  in idt.asm which constitutes the entry point for all interrupt
+		//    handlers.
+		// 2. Interrupt clock, hence task switching, in this case the interrupt
+		//    handler called in our vector of function 'idt_interrupt_handler'
+		//    does not return, hence it is important to save the registers so
+		//    that they can be restored later on at the next task switching
 		task_save_state(task_current(), frame);
 		idt_interrupt_handlers[interrupt](frame);
 	}
+
+	// Restore the task's paging directory so that execution can resume
 	task_context(task_current());
 	outb(0x20, 0x20);
+}
+
+void idt_clock()
+{
+	outb(0x20, 0x20);
+
+	// get the next task and execute it
+	struct task *t = task_switch_next();
+	if (!t)
+	{
+		panic("There are no currently tasks to run\n");
+	}
+	task_execute_current();
 }
 
 void idt_set(int int_num, void *address)
@@ -73,7 +98,8 @@ void isr80h_register_command(int command_id, ISR80H_COMMAND_HANDLER command)
 	isr80h_commands[command_id] = command;
 }
 
-// This is the handler called by the assembly section concerning the 80H ISR
+// this is the handler called by the assembly section concerning the 0x80
+// interrupt, this does not pass through the general handler
 void *int80_handler(int command, struct interrupt_frame *iframe)
 {
 	void *res = 0;
@@ -117,25 +143,13 @@ void idt_handle_exception()
 	// terminate the process and start executing the next one
 	process_terminate(task_current()->process);
 	struct task *t = task_switch_next();
-	process_set_current(t->process);
-	task_context(t);
-	task_execute_current();
-}
-
-// this function is reponsible for the task switching
-void idt_clock()
-{
-	outb(0x20, 0x20);
-
-	// get the next task and execute it
-	struct task *t = task_switch_next();
 	if (!t)
 	{
-		panic("There are no currently tasks to run\n");
+		panic("idt_handle_exception(): no task to execute");
 	}
-	process_set_current(t->process);
 	task_execute_current();
 }
+
 
 void idt_init()
 {
